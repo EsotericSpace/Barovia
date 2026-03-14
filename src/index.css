@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 200%; }
+body, html { background: #060608; height: 100%; overflow: hidden; }
+
+/* Sharp corners everywhere — scope to interactive elements so circle overrides still work inline */
+button, input, textarea, select { border-radius: 0; border: none; outline: none; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a1a1a; }
+
+input, textarea, button { font-family: inherit; }
+textarea::placeholder, input::placeholder { color: #3a2d2d; }
+
+@keyframes hpdanger { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.hpdanger { animation: hpdanger 1.8s ease-in-out infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: .2; transform: scaleY(.7); }
+  50% { opacity: .8; transform: scaleY(1); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes rollPop {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dm      { animation: fadeUp .4s ease forwards; }
+.player  { animation: fadeUp .3s ease forwards; }
+.ooc     { animation: fadeUp .3s ease forwards; }
+.rollcard { animation: rollPop .25s ease forwards; }
+.panel   { animation: slideIn .25s ease forwards; }
+
+.ebtn:hover  { background: rgba(139,26,26,.12) !important; border-color: #c4a35a !important; color: #e8d090 !important; }
+.cbtn:hover  { border-color: #6a2a2a !important; color: #a09070 !important; }
+.sbtn:hover:not(:disabled) { border-color: #8b1a1a !important; color: #c4a35a !important; }
+.shbtn:hover { background: rgba(139,26,26,.1) !important; }
+.rbtn:hover:not(:disabled) { border-color: #c4a35a !important; color: #c4a35a !important; }
+
+.lbtn { background: none; border: none; cursor: pointer; padding: 0 .15rem; font-size: .75rem; transition: opacity .15s; line-height: 1; }
+.lbtn:hover { opacity: 1 !important; }
+
+.tipwrap { position: relative; cursor: default; display: inline-flex; align-items: center; }
+.tipwrap .tip {
+  visibility: hidden; opacity: 0;
+  position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: #0d0a0e; border: 1px solid #2a1a2a; color: #8a7a6a;
+  font-size: .62rem; padding: .2rem .45rem; white-space: nowrap;
+  pointer-events: none; transition: opacity .15s; z-index: 300;
+  font-family: 'Cinzel', serif; letter-spacing: .05em;
+}
+.tipwrap:hover .tip { visibility: visible; opacity: 1; }

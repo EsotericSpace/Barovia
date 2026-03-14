@@ -1,0 +1,17 @@
+export const CONDITIONS = {
+  blinded:       { label: 'Blinded',       desc: 'Cannot see. Auto-fail sight checks. Attack rolls against you have advantage; your attack rolls have disadvantage.' },
+  charmed:       { label: 'Charmed',       desc: 'Cannot attack the charmer. The charmer has advantage on social checks against you.' },
+  deafened:      { label: 'Deafened',      desc: 'Cannot hear. Auto-fail hearing checks.' },
+  exhausted:     { label: 'Exhausted',     desc: 'Disadvantage on ability checks. Effects worsen with each level of exhaustion.' },
+  frightened:    { label: 'Frightened',    desc: 'Disadvantage on ability checks and attack rolls while source is in sight. Cannot willingly move closer to the source.' },
+  grappled:      { label: 'Grappled',      desc: 'Speed becomes 0. Ends if the grappler is incapacitated or you are moved out of reach.' },
+  incapacitated: { label: 'Incapacitated', desc: 'Cannot take actions or reactions.' },
+  invisible:     { label: 'Invisible',     desc: 'Cannot be seen without special senses. Attack rolls against you have disadvantage; your attack rolls have advantage.' },
+  paralyzed:     { label: 'Paralyzed',     desc: 'Incapacitated and cannot move or speak. Auto-fail STR and DEX saves. Attacks against you have advantage; hits within 5ft are critical hits.' },
+  petrified:     { label: 'Petrified',     desc: 'Transformed to stone. Incapacitated, immune to poison and disease, resistant to all damage. Unaware of surroundings.' },
+  poisoned:      { label: 'Poisoned',      desc: 'Disadvantage on attack rolls and ability checks.' },
+  prone:         { label: 'Prone',         desc: 'Disadvantage on attack rolls. Attacks within 5ft have advantage against you; ranged attacks have disadvantage.' },
+  restrained:    { label: 'Restrained',    desc: 'Speed becomes 0. Attack rolls against you have advantage; your attack rolls have disadvantage. Disadvantage on DEX saves.' },
+  stunned:       { label: 'Stunned',       desc: 'Incapacitated, cannot move, can speak only falteringly. Auto-fail STR and DEX saves. Attacks against you have advantage.' },
+  unconscious:   { label: 'Unconscious',   desc: 'Incapacitated, cannot move or speak, unaware of surroundings. Auto-fail STR and DEX saves. Attacks against you have advantage; hits within 5ft are critical hits.' },
+}
