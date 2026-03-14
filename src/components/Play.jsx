@@ -30,7 +30,7 @@ const SKILL_MAP = {
 
 function rollD20() { return Math.floor(Math.random() * 20) + 1 }
 
-export default function Play({ character, onCharacterUpdate }) {
+export default function Play({ character, onCharacterUpdate, onExit }) {
   const saved = loadMsgs()
   const [msgs, setMsgs] = useState(saved?.display ?? [])
   const [input, setInput] = useState('')
@@ -164,7 +164,13 @@ export default function Play({ character, onCharacterUpdate }) {
 
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `.55rem ${SP.section}`, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <span style={{ ...TY.label, color: C.crimson }}>✦  Barovia</span>
+        <button
+          onClick={onExit}
+          style={{
+            background: 'none', border: 'none', color: C.textGhost,
+            ...TY.micro, cursor: 'pointer', padding: 0, letterSpacing: '.08em',
+          }}
+        >✦  Barovia</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: SP.lg }}>
           {/* HP — concept D */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

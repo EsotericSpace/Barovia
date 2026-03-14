@@ -77,6 +77,7 @@ export default function App() {
         const next = typeof c === 'function' ? c(character) : c
         setCharacter(next)
       }}
+      onExit={() => setPhase('landing')}
     />
   )
 }
