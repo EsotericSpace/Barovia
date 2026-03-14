@@ -1,5 +1,6 @@
 import { CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
+import { SPELL_ASSIGNMENTS } from '../data/spells.js'
 import { SK, SKILLS, mod } from './dnd.js'
 
 export function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
@@ -26,6 +27,10 @@ export function generateSheet(cls) {
   const expertise = cfg.expertiseCount > 0 ? pickN(classProfs, cfg.expertiseCount) : []
   const allProfs = [...new Set([...bg.profs, ...classProfs])]
 
+  const spellData = SPELL_ASSIGNMENTS[cls]
+  const spells = spellData?.[bgKey] ?? null
+  const spellSlots = spellData ? { ...spellData.slots, used: 0 } : null
+
   return {
     stats, background: bgKey,
     bgProfs: bg.profs, classProfs, expertise, profs: allProfs,
@@ -35,5 +40,8 @@ export function generateSheet(cls) {
     maxHp: cfg.hd + mod(stats.constitution),
     ac: 10 + mod(stats.dexterity),
     hd: cfg.hd,
+    cantrips: spells?.cantrips ?? [],
+    spellsKnown: spells?.spells ?? [],
+    spellSlots,
   }
 }

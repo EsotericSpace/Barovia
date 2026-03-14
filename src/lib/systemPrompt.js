@@ -10,6 +10,9 @@ export function buildSystemPrompt(character) {
 
   const statLine = SK.map(k => `${SA[k]} ${stats[k]}(${modStr(stats[k])})`).join(' ')
   const inv = inventory?.length ? inventory.join(', ') : equip?.join(', ') || 'none'
+  const spellLine = character.cantrips?.length
+    ? `Cantrips: ${character.cantrips.join(', ')} | Spells known: ${character.spellsKnown?.join(', ')} | Spell slots: ${character.spellSlots?.total ?? 0} × L${character.spellSlots?.level ?? 1}${character.spellSlots?.shortRest ? ' (short rest)' : ''}`
+    : null
   const activeConditions = (conditions ?? []).length
     ? (conditions ?? []).map(k => `${CONDITIONS[k]?.label ?? k} — ${CONDITIONS[k]?.desc ?? ''}`).join('\n')
     : null
@@ -23,7 +26,7 @@ Background: ${bg?.desc}
 Background Feature — ${bg?.feature}: ${bg?.featureDesc}
 Personality: ${personality}
 Ideal: ${ideal} | Bond: ${bond} | Flaw: ${flaw}
-Inventory: ${inv}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ''}
+Inventory: ${inv}${spellLine ? `\n${spellLine}` : ''}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ''}
 
 CLASS NOTES — ${cls}: ${classNarrative}
 
@@ -46,6 +49,7 @@ MECHANICS — append these tags SILENTLY at the very end of your response, after
 - Item gained: [ITEM:+name] | Item lost/used: [ITEM:-name]
 - HP change: [STAT:hp:newValue]
 - Skill check or saving throw needed: [ROLL:skillname:dc] using: athletics, acrobatics, stealth, arcana, history, investigation, nature, religion, animal_handling, insight, medicine, perception, survival, deception, intimidation, performance, persuasion, or ability names, or "attack"
+- Spell slot used: [SPELL:slot] (increments used count; the app tracks remaining slots)
 - Apply a condition: [CONDITION:+conditionname] | Remove a condition: [CONDITION:-conditionname] using: blinded, charmed, deafened, exhausted, frightened, grappled, incapacitated, invisible, paralyzed, petrified, poisoned, prone, restrained, stunned, unconscious
 
 FAILURE: Never a wall. Failure opens a harder or different route. Calibrate DCs to the character's actual stats.

@@ -92,6 +92,11 @@ export default function Play({ character, onCharacterUpdate }) {
         }))
       }
       if (t.type === 'hp') onCharacterUpdate(c => ({ ...c, hp: t.val }))
+      if (t.type === 'spellslot') onCharacterUpdate(c => {
+        if (!c.spellSlots) return c
+        const used = Math.min((c.spellSlots.used ?? 0) + 1, c.spellSlots.total)
+        return { ...c, spellSlots: { ...c.spellSlots, used } }
+      })
       if (t.type === 'condition') {
         const add = t.val.startsWith('+')
         const key = t.val.slice(1).toLowerCase()
@@ -213,7 +218,7 @@ export default function Play({ character, onCharacterUpdate }) {
       <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} />
       {sheetOpen && <>
         <div onClick={() => setSheetOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: Z.panel - 1 }} />
-        <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} />
+        <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} onCharacterUpdate={onCharacterUpdate} />
       </>}
 
     </div>

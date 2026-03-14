@@ -23,6 +23,10 @@ export function parseTags(raw) {
       tags.push({ type: 'condition', val: s.trim() })
       return ''
     })
+    .replace(/\[SPELL:slot\]/g, () => {
+      tags.push({ type: 'spellslot' })
+      return ''
+    })
     .trim()
 
   return { text, tags }

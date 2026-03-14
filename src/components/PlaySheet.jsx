@@ -24,7 +24,7 @@ function Section({ label, open, onToggle, children }) {
   )
 }
 
-export default function PlaySheet({ character, bg, setSheetOpen }) {
+export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpdate }) {
   const [tab, setTab] = useState('identity')
   const [open, setOpen] = useState(() => {
     try {
@@ -191,6 +191,60 @@ export default function PlaySheet({ character, bg, setSheetOpen }) {
               ))}
             </div>
           </div>
+
+          {character.spellSlots && (
+            <div>
+              <div style={{ ...TY.micro, color: C.textDim, marginBottom: SP.sm, paddingBottom: SP.xs }}>Spell Slots</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SP.xs }}>
+                <div style={{ display: 'flex', gap: SP.xs, flexWrap: 'wrap' }}>
+                  {Array.from({ length: character.spellSlots.total }).map((_, i) => {
+                    const used = i < (character.spellSlots.used ?? 0)
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          const slots = character.spellSlots
+                          const used = slots.used ?? 0
+                          const next = used >= slots.total ? 0 : used + 1
+                          onCharacterUpdate?.(c => ({ ...c, spellSlots: { ...c.spellSlots, used: next } }))
+                        }}
+                        title={used ? 'Slot used · click to cycle' : 'Slot available · click to use'}
+                        style={{
+                          width: '28px', height: '28px', border: `1px solid ${used ? C.border : C.crimson}`,
+                          background: used ? 'transparent' : 'rgba(160,40,40,.1)',
+                          color: used ? C.textGhost : C.crimson,
+                          ...TY.micro, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >{used ? '·' : `L${character.spellSlots.level}`}</button>
+                    )
+                  })}
+                </div>
+                <div style={{ ...TY.micro, color: C.textGhost }}>
+                  {(character.spellSlots.used ?? 0)}/{character.spellSlots.total} used · recovers on {character.spellSlots.shortRest ? 'short' : 'long'} rest
+                </div>
+              </div>
+              {character.cantrips?.length > 0 && (
+                <div style={{ marginTop: SP.sm }}>
+                  <div style={{ ...TY.micro, color: C.textGhost, marginBottom: '3px' }}>Cantrips</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px' }}>
+                    {character.cantrips.map(s => (
+                      <span key={s} style={{ ...TY.caption, color: C.textMuted, border: `1px solid ${C.border}`, padding: '1px 5px' }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {character.spellsKnown?.length > 0 && (
+                <div style={{ marginTop: SP.sm }}>
+                  <div style={{ ...TY.micro, color: C.textGhost, marginBottom: '3px' }}>Spells Known</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {character.spellsKnown.map(s => (
+                      <span key={s} style={{ ...TY.caption, color: C.textMuted, border: `1px solid ${C.border}`, padding: '1px 5px' }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <div style={{ ...TY.micro, color: C.textDim, marginBottom: SP.sm, paddingBottom: SP.xs }}>Saving Throws</div>
