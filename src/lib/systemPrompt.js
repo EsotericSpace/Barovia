@@ -1,10 +1,12 @@
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { CONDITIONS } from '../data/conditions.js'
+import { CLASS_CONFIG } from '../data/classes.js'
 import { SK, SA, mod, modStr } from './dnd.js'
 
 export function buildSystemPrompt(character) {
   const { name, class: cls, background, profs, expertise, personality, ideal, bond, flaw, equip, stats, maxHp, ac, hd, hp, inventory, conditions } = character
   const bg = BACKGROUNDS[background]
+  const classNarrative = CLASS_CONFIG[cls]?.narrative ?? ''
 
   const statLine = SK.map(k => `${SA[k]} ${stats[k]}(${modStr(stats[k])})`).join(' ')
   const inv = inventory?.length ? inventory.join(', ') : equip?.join(', ') || 'none'
@@ -22,6 +24,8 @@ Background Feature — ${bg?.feature}: ${bg?.featureDesc}
 Personality: ${personality}
 Ideal: ${ideal} | Bond: ${bond} | Flaw: ${flaw}
 Inventory: ${inv}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ''}
+
+CLASS NOTES — ${cls}: ${classNarrative}
 
 Honor their class, background, and personality. The background feature (${bg?.feature}) should come up naturally — don't announce it, just use it. Press on their flaw and bond — Barovia finds every wound.
 
