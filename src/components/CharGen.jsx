@@ -77,7 +77,7 @@ export default function CharGen({ character, onComplete }) {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
         {/* Header */}
-        <div style={{
+        <div className="chargen-header" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           borderBottom: `1px solid ${C.border}`, paddingBottom: SP.md, marginBottom: SP.lg,
         }}>
@@ -112,7 +112,7 @@ export default function CharGen({ character, onComplete }) {
         </div>
 
         {/* Three columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: SP.xl, alignItems: 'start' }}>
+        <div className="chargen-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: SP.xl, alignItems: 'start' }}>
           <CharGenStats
             sheet={sheet} character={character} cfg={cfg}
             locked={locked} toggleStatLock={toggleStatLock}

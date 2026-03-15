@@ -229,7 +229,7 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
     <div style={{ height: '100vh', background: C.bg, display: 'flex', flexDirection: 'column', ...TY.body, color: C.textPrimary, position: 'relative' }}>
 
       {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `.55rem ${SP.section}`, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+      <div className="topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `.55rem ${SP.section}`, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
         <button
           onClick={onExit}
           style={{
@@ -237,7 +237,7 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
             ...TY.micro, cursor: 'pointer', padding: 0, letterSpacing: '.08em',
           }}
         >✦  Barovia</button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: SP.lg }}>
+        <div className="topbar-center" style={{ display: 'flex', alignItems: 'center', gap: SP.lg }}>
           {/* HP — concept D */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
@@ -261,7 +261,7 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
                 </div>
               </div>
             ) : (
-              <div style={{ width: '240px', height: '4px', background: '#1a1018', position: 'relative' }}>
+              <div className="hp-bar" style={{ width: '240px', height: '4px', background: '#1a1018', position: 'relative' }}>
                 <div style={{
                   position: 'absolute', top: 0, left: 0, height: '100%',
                   width: `${Math.max(0, hpPct * 100)}%`,

@@ -61,7 +61,7 @@ export default function Setup({ onComplete }) {
         animationFillMode: 'forwards',
       }}>
         <div style={{ ...TY.micro, color: C.textDim, letterSpacing: '.2em', marginBottom: SP.sm }}>Your Class</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: SP.md }}>
+        <div className="class-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: SP.md }}>
           {CLASSES.map(c => {
             const active = cls === c
             return (

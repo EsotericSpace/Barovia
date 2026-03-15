@@ -59,3 +59,30 @@ textarea::placeholder, input::placeholder { color: #3a2d2d; }
   font-family: 'Cinzel', serif; letter-spacing: .05em;
 }
 .tipwrap:hover .tip { visibility: visible; opacity: 1; }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  html { font-size: 150%; }
+
+  /* Play: wrap HP/conditions below the nav buttons */
+  .topbar { flex-wrap: wrap; }
+  .topbar-center { order: 3; flex-basis: 100%; border-top: 1px solid #2e1e28; padding-top: 4px; }
+  /* Hide the HP bar track — numbers stay visible */
+  .hp-bar { display: none; }
+
+  /* PlaySheet: full-width drawer */
+  .panel { width: 100vw !important; }
+
+  /* CharGen: single column */
+  .chargen-cols { grid-template-columns: 1fr !important; }
+  /* CharGen header: allow buttons to wrap under name */
+  .chargen-header { flex-wrap: wrap; }
+
+  /* Setup: 3-column class grid */
+  .class-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+@media (min-width: 641px) and (max-width: 960px) {
+  /* CharGen: 2 columns on tablets */
+  .chargen-cols { grid-template-columns: 1fr 1fr !important; }
+}
