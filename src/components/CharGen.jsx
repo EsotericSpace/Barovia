@@ -4,6 +4,7 @@ import { BACKGROUNDS } from '../data/backgrounds.js'
 import { C, TY, SP } from '../lib/tokens.js'
 import { SK, mod } from '../lib/dnd.js'
 import { generateSheet, pick } from '../lib/chargen.js'
+import { SPELL_ASSIGNMENTS } from '../data/spells.js'
 import CharGenStats from './CharGenStats.jsx'
 import CharGenCombat from './CharGenCombat.jsx'
 import CharGenTraits from './CharGenTraits.jsx'
@@ -40,11 +41,16 @@ export default function CharGen({ character, onComplete }) {
     const bgKey = pick(Object.keys(BACKGROUNDS).filter(k => k !== sheet.background))
     const bg = BACKGROUNDS[bgKey]
     const allProfs = [...new Set([...bg.profs, ...sheet.classProfs])]
+    const spellData = SPELL_ASSIGNMENTS[character.class]
+    const spells = spellData?.[bgKey] ?? null
     setSheet(prev => ({
       ...prev,
       background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
       personality: pick(bg.personality), ideal: pick(bg.ideal),
       bond: pick(bg.bond), flaw: pick(bg.flaw),
+      cantrips: spells?.cantrips ?? prev.cantrips,
+      spellsKnown: spells?.spells ?? prev.spellsKnown,
+      spellSlots: spellData ? { ...spellData.slots, used: 0 } : prev.spellSlots,
     }))
   }
 
