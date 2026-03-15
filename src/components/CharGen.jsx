@@ -21,7 +21,16 @@ export default function CharGen({ character, onComplete }) {
       const cfg = CLASS_CONFIG[character.class]
       const stats = { ...next.stats }
       SK.forEach(k => { if (locked.stats?.[k]) stats[k] = prev.stats[k] })
-      return { ...next, stats, maxHp: cfg.hd + mod(stats.constitution), ac: 10 + mod(stats.dexterity) }
+      const bg = BACKGROUNDS[prev.background]
+      return {
+        ...prev, stats,
+        maxHp: cfg.hd + mod(stats.constitution),
+        ac: 10 + mod(stats.dexterity),
+        personality: pick(bg.personality),
+        ideal: pick(bg.ideal),
+        bond: pick(bg.bond),
+        flaw: pick(bg.flaw),
+      }
     })
     setRerolls(r => r - 1)
   }
@@ -37,21 +46,24 @@ export default function CharGen({ character, onComplete }) {
     setSheet(prev => ({ ...prev, [key]: pick(pool) }))
   }
 
-  function rerollBackground() {
-    const bgKey = pick(Object.keys(BACKGROUNDS).filter(k => k !== sheet.background))
-    const bg = BACKGROUNDS[bgKey]
-    const allProfs = [...new Set([...bg.profs, ...sheet.classProfs])]
-    const spellData = SPELL_ASSIGNMENTS[character.class]
-    const spells = spellData?.[bgKey] ?? null
-    setSheet(prev => ({
-      ...prev,
-      background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
-      personality: pick(bg.personality), ideal: pick(bg.ideal),
-      bond: pick(bg.bond), flaw: pick(bg.flaw),
-      cantrips: spells?.cantrips ?? prev.cantrips,
-      spellsKnown: spells?.spells ?? prev.spellsKnown,
-      spellSlots: spellData ? { ...spellData.slots, used: 0 } : prev.spellSlots,
-    }))
+  const bgKeys = Object.keys(BACKGROUNDS)
+
+  function shiftBackground(dir) {
+    setSheet(prev => {
+      const idx = (bgKeys.indexOf(prev.background) + dir + bgKeys.length) % bgKeys.length
+      const bgKey = bgKeys[idx]
+      const bg = BACKGROUNDS[bgKey]
+      const allProfs = [...new Set([...bg.profs, ...prev.classProfs])]
+      const spellData = SPELL_ASSIGNMENTS[character.class]
+      const spells = spellData?.[bgKey] ?? null
+      return {
+        ...prev,
+        background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
+        cantrips: spells?.cantrips ?? prev.cantrips,
+        spellsKnown: spells?.spells ?? prev.spellsKnown,
+        spellSlots: spellData ? { ...spellData.slots, used: 0 } : prev.spellSlots,
+      }
+    })
   }
 
   const cfg = CLASS_CONFIG[character.class]
@@ -110,7 +122,9 @@ export default function CharGen({ character, onComplete }) {
           />
           <CharGenTraits
             sheet={sheet} bg={bg}
-            rerollTrait={rerollTrait} rerollBackground={rerollBackground}
+            rerollTrait={rerollTrait}
+            prevBackground={() => shiftBackground(-1)}
+            nextBackground={() => shiftBackground(1)}
           />
         </div>
 

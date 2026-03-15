@@ -1,7 +1,7 @@
 import { C, TY, SP } from '../lib/tokens.js'
 import { SL, Reroll } from './CharGenShared.jsx'
 
-export default function CharGenTraits({ sheet, bg, rerollTrait, rerollBackground }) {
+export default function CharGenTraits({ sheet, bg, rerollTrait, prevBackground, nextBackground }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: SP.md }}>
 
@@ -12,8 +12,9 @@ export default function CharGenTraits({ sheet, bg, rerollTrait, rerollBackground
             ...TY.label, color: C.gold, marginBottom: SP.xs,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
+            <button onClick={prevBackground} style={{ background: 'none', color: C.textGhost, ...TY.micro, cursor: 'pointer', padding: '0 4px' }}>‹</button>
             <span>{sheet.background}</span>
-            <Reroll onClick={rerollBackground} />
+            <button onClick={nextBackground} style={{ background: 'none', color: C.textGhost, ...TY.micro, cursor: 'pointer', padding: '0 4px' }}>›</button>
           </div>
           <div style={{ ...TY.caption, color: C.textDim, fontStyle: 'italic', marginBottom: SP.sm }}>{bg.desc}</div>
           <div style={{ height: '1px', background: C.border, marginBottom: SP.sm }} />
