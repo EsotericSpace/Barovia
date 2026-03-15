@@ -41,6 +41,33 @@ export default function CharGenStats({ sheet, character, cfg, locked, toggleStat
         </div>
       </div>
 
+      {sheet.cantrips?.length > 0 && (
+        <div>
+          <SL>Spells</SL>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            {sheet.spellSlots && (
+              <div style={{ ...TY.caption, color: C.textDim, marginBottom: SP.xs }}>
+                {sheet.spellSlots.total} × Level {sheet.spellSlots.level} slot{sheet.spellSlots.total > 1 ? 's' : ''}{sheet.spellSlots.shortRest ? ' · short rest' : ' · long rest'}
+              </div>
+            )}
+            {sheet.cantrips.map(s => (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: SP.xs }}>
+                <span style={{ ...TY.micro, color: C.textGhost, fontSize: '.4rem' }}>◆</span>
+                <span style={{ ...TY.caption, color: C.textMuted }}>{s}</span>
+                <span style={{ ...TY.micro, color: C.textGhost, marginLeft: 'auto' }}>cantrip</span>
+              </div>
+            ))}
+            {sheet.spellsKnown.map(s => (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: SP.xs }}>
+                <span style={{ ...TY.micro, color: C.crimson, fontSize: '.4rem' }}>◆</span>
+                <span style={{ ...TY.caption, color: C.textMuted }}>{s}</span>
+                <span style={{ ...TY.micro, color: C.textGhost, marginLeft: 'auto' }}>1st</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
