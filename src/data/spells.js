@@ -5,7 +5,6 @@
 
 export const SPELL_ASSIGNMENTS = {
   Bard: {
-    slots: { total: 2, level: 1, shortRest: false },
     Acolyte:    { cantrips: ['Vicious Mockery', 'Mage Hand'],     spells: ['Healing Word', 'Bane'] },
     Criminal:   { cantrips: ['Vicious Mockery', 'Minor Illusion'], spells: ['Charm Person', 'Disguise Self'] },
     'Folk Hero':{ cantrips: ['Vicious Mockery', 'Thunderclap'],   spells: ['Healing Word', 'Heroism'] },
@@ -15,7 +14,6 @@ export const SPELL_ASSIGNMENTS = {
     Hermit:     { cantrips: ['Vicious Mockery', 'Minor Illusion'], spells: ['Dissonant Whispers', 'Detect Magic'] },
   },
   Cleric: {
-    slots: { total: 2, level: 1, shortRest: false },
     Acolyte:    { cantrips: ['Sacred Flame', 'Guidance', 'Thaumaturgy'], spells: ['Cure Wounds', 'Bless', 'Detect Evil and Good'] },
     Criminal:   { cantrips: ['Sacred Flame', 'Guidance', 'Toll the Dead'], spells: ['Bane', 'Command', 'Inflict Wounds'] },
     'Folk Hero':{ cantrips: ['Sacred Flame', 'Guidance', 'Mending'],      spells: ['Cure Wounds', 'Bless', 'Shield of Faith'] },
@@ -25,7 +23,6 @@ export const SPELL_ASSIGNMENTS = {
     Hermit:     { cantrips: ['Sacred Flame', 'Guidance', 'Resistance'],   spells: ['Detect Evil and Good', 'Protection from Evil and Good', 'Inflict Wounds'] },
   },
   Druid: {
-    slots: { total: 2, level: 1, shortRest: false },
     Acolyte:    { cantrips: ['Druidcraft', 'Guidance'],       spells: ['Cure Wounds', 'Detect Poison and Disease', 'Speak with Animals'] },
     Criminal:   { cantrips: ['Druidcraft', 'Poison Spray'],   spells: ['Entangle', 'Charm Person', 'Fog Cloud'] },
     'Folk Hero':{ cantrips: ['Druidcraft', 'Shillelagh'],     spells: ['Cure Wounds', 'Goodberry', 'Thunderwave'] },
@@ -35,7 +32,6 @@ export const SPELL_ASSIGNMENTS = {
     Hermit:     { cantrips: ['Druidcraft', 'Resistance'],     spells: ['Detect Magic', 'Fog Cloud', 'Speak with Animals'] },
   },
   Sorcerer: {
-    slots: { total: 2, level: 1, shortRest: false },
     Acolyte:    { cantrips: ['Fire Bolt', 'Mage Hand', 'Light', 'Prestidigitation'],         spells: ['Shield', 'False Life'] },
     Criminal:   { cantrips: ['Fire Bolt', 'Mage Hand', 'Minor Illusion', 'Friends'],         spells: ['Disguise Self', 'Charm Person'] },
     'Folk Hero':{ cantrips: ['Fire Bolt', 'Shocking Grasp', 'Mage Hand', 'Prestidigitation'], spells: ['Thunderwave', 'Shield'] },
@@ -45,7 +41,6 @@ export const SPELL_ASSIGNMENTS = {
     Hermit:     { cantrips: ['Chill Touch', 'Ray of Frost', 'Mage Hand', 'Prestidigitation'], spells: ['False Life', 'Fog Cloud'] },
   },
   Warlock: {
-    slots: { total: 2, level: 1, shortRest: true },
     Acolyte:    { cantrips: ['Eldritch Blast', 'Toll the Dead'],   spells: ['Hex', 'Armor of Agathys'] },
     Criminal:   { cantrips: ['Eldritch Blast', 'Minor Illusion'],  spells: ['Hex', 'Arms of Hadar'] },
     'Folk Hero':{ cantrips: ['Eldritch Blast', 'Toll the Dead'],   spells: ['Hex', 'Hellish Rebuke'] },
@@ -55,7 +50,6 @@ export const SPELL_ASSIGNMENTS = {
     Hermit:     { cantrips: ['Eldritch Blast', 'Chill Touch'],     spells: ['Hex', 'Arms of Hadar'] },
   },
   Wizard: {
-    slots: { total: 2, level: 1, shortRest: false },
     Acolyte:    { cantrips: ['Fire Bolt', 'Mage Hand', 'Light'],          spells: ['Detect Magic', 'Identify', 'Shield'] },
     Criminal:   { cantrips: ['Minor Illusion', 'Mage Hand', 'Prestidigitation'], spells: ['Disguise Self', 'Charm Person', 'Grease'] },
     'Folk Hero':{ cantrips: ['Fire Bolt', 'Mage Hand', 'Mending'],        spells: ['Shield', 'Magic Missile', 'Burning Hands'] },

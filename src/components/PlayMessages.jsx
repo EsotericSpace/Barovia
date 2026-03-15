@@ -73,6 +73,36 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
           )
         }
 
+        if (m.role === 'rest') return (
+          <div key={m.id} style={{
+            alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: SP.md,
+            border: `1px solid ${C.border}`, padding: `${SP.sm} ${SP.md}`, background: 'rgba(8,5,10,.8)',
+          }}>
+            <div style={{ ...TY.heading, fontSize: '1.1rem', color: C.textMuted, lineHeight: 1 }}>{m.short ? '◑' : '○'}</div>
+            <div>
+              <div style={{ ...TY.label, color: C.textDim }}>{m.short ? 'Short Rest' : 'Long Rest'}</div>
+              <div style={{ ...TY.helper, color: C.textGhost, fontStyle: 'italic' }}>
+                {m.short
+                  ? m.hpGain > 0 ? `+${m.hpGain} HP` : 'No HP gained'
+                  : 'Full HP · All slots restored'}
+              </div>
+            </div>
+          </div>
+        )
+
+        if (m.role === 'levelup') return (
+          <div key={m.id} style={{
+            alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: SP.md,
+            border: `1px solid ${C.gold}`, padding: `${SP.sm} ${SP.md}`, background: 'rgba(8,5,10,.8)',
+          }}>
+            <div style={{ ...TY.heading, fontSize: '1.1rem', color: C.gold, lineHeight: 1 }}>↑</div>
+            <div>
+              <div style={{ ...TY.label, color: C.gold }}>Level {m.level}</div>
+              <div style={{ ...TY.helper, color: C.textDim, fontStyle: 'italic' }}>HP · Proficiency · Spells updated</div>
+            </div>
+          </div>
+        )
+
         return null
       })}
 

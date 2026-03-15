@@ -5,6 +5,7 @@ import { C, TY, SP } from '../lib/tokens.js'
 import { SK, mod } from '../lib/dnd.js'
 import { generateSheet, pick } from '../lib/chargen.js'
 import { SPELL_ASSIGNMENTS } from '../data/spells.js'
+import { SLOT_TABLE } from '../data/levelup.js'
 import CharGenStats from './CharGenStats.jsx'
 import CharGenCombat from './CharGenCombat.jsx'
 import CharGenTraits from './CharGenTraits.jsx'
@@ -61,7 +62,7 @@ export default function CharGen({ character, onComplete }) {
         background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
         cantrips: spells?.cantrips ?? prev.cantrips,
         spellsKnown: spells?.spells ?? prev.spellsKnown,
-        spellSlots: spellData ? { ...spellData.slots, used: 0 } : prev.spellSlots,
+        spellSlots: SLOT_TABLE[character.class] ? SLOT_TABLE[character.class][0].map(s => ({ ...s, used: 0 })) : prev.spellSlots,
       }
     })
   }

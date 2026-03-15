@@ -45,9 +45,9 @@ export default function CharGenStats({ sheet, character, cfg, locked, toggleStat
         <div>
           <SL>Spells</SL>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            {sheet.spellSlots && (
+            {sheet.spellSlots?.length > 0 && (
               <div style={{ ...TY.caption, color: C.textDim, marginBottom: SP.xs }}>
-                {sheet.spellSlots.total} × Level {sheet.spellSlots.level} slot{sheet.spellSlots.total > 1 ? 's' : ''}{sheet.spellSlots.shortRest ? ' · short rest' : ' · long rest'}
+                {sheet.spellSlots.map(s => `${s.total} × L${s.level}`).join(', ')} · {sheet.shortRestCaster ? 'short rest' : 'long rest'}
               </div>
             )}
             {sheet.cantrips.map(s => (

@@ -1,6 +1,7 @@
 import { CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SPELL_ASSIGNMENTS } from '../data/spells.js'
+import { SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { SK, SKILLS, mod } from './dnd.js'
 
 export function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
@@ -29,7 +30,9 @@ export function generateSheet(cls) {
 
   const spellData = SPELL_ASSIGNMENTS[cls]
   const spells = spellData?.[bgKey] ?? null
-  const spellSlots = spellData ? { ...spellData.slots, used: 0 } : null
+  const slotTiers = SLOT_TABLE[cls]
+  const spellSlots = slotTiers ? slotTiers[0].map(s => ({ ...s, used: 0 })) : null
+  const shortRestCaster = SHORT_REST_CASTERS.has(cls)
 
   return {
     stats, background: bgKey,
@@ -43,5 +46,6 @@ export function generateSheet(cls) {
     cantrips: spells?.cantrips ?? [],
     spellsKnown: spells?.spells ?? [],
     spellSlots,
+    shortRestCaster,
   }
 }

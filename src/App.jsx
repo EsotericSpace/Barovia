@@ -63,6 +63,8 @@ export default function App() {
             inventory: [...sheet.equip],
             activeMonster: null,
             conditions: [],
+            level: 1,
+            deathSaves: { successes: 0, failures: 0 },
           }))
           setPhase('play')
         }}

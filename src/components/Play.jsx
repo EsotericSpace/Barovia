@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { parseTags } from '../lib/parseTags.js'
 import { buildSystemPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
+import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { C, TY, SP, Z } from '../lib/tokens.js'
 import { mod } from '../lib/dnd.js'
 import PlayMessages from './PlayMessages.jsx'
@@ -36,6 +37,7 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
   const histRef   = useRef(saved?.history ?? [])
   const sysRef    = useRef('')
   const bottomRef = useRef(null)
@@ -91,12 +93,73 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
           ...c, inventory: add ? [...c.inventory, item] : c.inventory.filter(i => i !== item),
         }))
       }
-      if (t.type === 'hp') onCharacterUpdate(c => ({ ...c, hp: t.val }))
-      if (t.type === 'spellslot') onCharacterUpdate(c => {
-        if (!c.spellSlots) return c
-        const used = Math.min((c.spellSlots.used ?? 0) + 1, c.spellSlots.total)
-        return { ...c, spellSlots: { ...c.spellSlots, used } }
+      if (t.type === 'hp') onCharacterUpdate(c => {
+        const wasAtZero = c.hp === 0
+        const next = { ...c, hp: t.val }
+        if (wasAtZero && t.val > 0) next.deathSaves = { successes: 0, failures: 0 }
+        return next
       })
+      if (t.type === 'spellslot') onCharacterUpdate(c => {
+        if (!Array.isArray(c.spellSlots)) return c
+        const tierIdx = c.spellSlots.findIndex(s => s.used < s.total)
+        if (tierIdx === -1) return c
+        const slots = c.spellSlots.map((s, i) => i === tierIdx ? { ...s, used: s.used + 1 } : s)
+        return { ...c, spellSlots: slots }
+      })
+      if (t.type === 'levelup') {
+        const newLevel = (charRef.current.level ?? 1) + 1
+        onCharacterUpdate(c => {
+          const hdAvg = HD_AVG[c.class] ?? 5
+          const hpIncrease = hdAvg + mod(c.stats.constitution)
+          const newMaxHp = c.maxHp + hpIncrease
+          const tierDefs = SLOT_TABLE[c.class]?.[newLevel - 1]
+          const newSpellSlots = tierDefs
+            ? tierDefs.map(def => {
+                const existing = Array.isArray(c.spellSlots) ? c.spellSlots.find(s => s.level === def.level) : null
+                return { ...def, used: existing?.used ?? 0 }
+              })
+            : c.spellSlots
+          return {
+            ...c,
+            level: newLevel,
+            maxHp: newMaxHp,
+            hp: Math.min(c.hp + hpIncrease, newMaxHp),
+            profBonus: profBonus(newLevel),
+            spellSlots: newSpellSlots,
+          }
+        })
+        buf.push({ role: 'levelup', id: 'lu-' + Date.now(), level: newLevel })
+      }
+      if (t.type === 'shortrest') {
+        const c = charRef.current
+        const hdAvg = HD_AVG[c.class] ?? 5
+        const hpGain = hdAvg + mod(c.stats.constitution)
+        const newHp = Math.min(c.hp + Math.max(1, hpGain), c.maxHp)
+        const isWarlock = SHORT_REST_CASTERS.has(c.class)
+        onCharacterUpdate(ch => ({
+          ...ch,
+          hp: newHp,
+          spellSlots: isWarlock && Array.isArray(ch.spellSlots)
+            ? ch.spellSlots.map(s => ({ ...s, used: 0 }))
+            : ch.spellSlots,
+        }))
+        buf.push({ role: 'rest', id: 'sr-' + Date.now(), short: true, hpGain: newHp - c.hp })
+      }
+      if (t.type === 'longrest') {
+        onCharacterUpdate(c => ({
+          ...c,
+          hp: c.maxHp,
+          spellSlots: Array.isArray(c.spellSlots) ? c.spellSlots.map(s => ({ ...s, used: 0 })) : c.spellSlots,
+        }))
+        buf.push({ role: 'rest', id: 'lr-' + Date.now(), short: false })
+      }
+      if (t.type === 'deathsave') onCharacterUpdate(c => {
+        const ds = c.deathSaves ?? { successes: 0, failures: 0 }
+        return t.success
+          ? { ...c, deathSaves: { ...ds, successes: ds.successes + 1 } }
+          : { ...c, deathSaves: { ...ds, failures: ds.failures + 1 } }
+      })
+      if (t.type === 'dead') setGameOver(true)
       if (t.type === 'condition') {
         const add = t.val.startsWith('+')
         const key = t.val.slice(1).toLowerCase()
@@ -153,10 +216,13 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
+  const isDying = character.hp === 0
   const hpPct = character.hp / (character.maxHp || 1)
-  const hpState = hpPct <= 0.25 ? 'danger' : hpPct <= 0.5 ? 'hurt' : 'healthy'
-  const hpNumColor = hpState === 'danger' ? C.crimson : hpState === 'hurt' ? '#a07050' : '#c8bba0'
+  const hpState = isDying ? 'dying' : hpPct <= 0.25 ? 'danger' : hpPct <= 0.5 ? 'hurt' : 'healthy'
+  const hpNumColor = hpState === 'dying' ? C.crimson : hpState === 'danger' ? C.crimson : hpState === 'hurt' ? '#a07050' : '#c8bba0'
   const hpBarColor = hpState === 'danger' ? '#3a1010' : hpState === 'hurt' ? '#6a1a1a' : C.crimson
+  const deathSaves = character.deathSaves ?? { successes: 0, failures: 0 }
+  const showDeathSaves = isDying && (character.level ?? 1) >= 3
   const bg = BACKGROUNDS[character.background]
 
   return (
@@ -175,20 +241,36 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
           {/* HP — concept D */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-              <span className={hpState === 'danger' ? 'hpdanger' : ''} style={{ ...TY.heading, fontSize: '.7rem', fontWeight: 600, color: hpNumColor, lineHeight: 1 }}>{character.hp}</span>
+              <span className={hpState === 'danger' || hpState === 'dying' ? 'hpdanger' : ''} style={{ ...TY.heading, fontSize: '.7rem', fontWeight: 600, color: hpNumColor, lineHeight: 1 }}>{character.hp}</span>
               <span style={{ ...TY.micro, color: C.gold }}>/</span>
               <span style={{ ...TY.heading, fontSize: '.7rem', fontWeight: 600, color: C.textMuted, lineHeight: 1 }}>{character.maxHp}</span>
               <span style={{ ...TY.micro, color: C.textMuted, letterSpacing: '.08em', marginLeft: '2px' }}>HP</span>
             </div>
-            <div style={{ width: '240px', height: '4px', background: '#1a1018', position: 'relative' }}>
-              <div style={{
-                position: 'absolute', top: 0, left: 0, height: '100%',
-                width: `${Math.max(0, hpPct * 100)}%`,
-                background: hpBarColor, transition: 'width .4s ease',
-              }}>
-                <div style={{ position: 'absolute', right: '-1px', top: '-2px', bottom: '-2px', width: '2px', background: C.gold, opacity: 0.6 }} />
+            {showDeathSaves ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '3px' }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: '8px', height: '8px', border: `1px solid ${C.gold}`, background: i < deathSaves.successes ? C.gold : 'transparent' }} />
+                  ))}
+                </div>
+                <div style={{ ...TY.micro, color: C.textGhost, lineHeight: 1 }}>·</div>
+                <div style={{ display: 'flex', gap: '3px' }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: '8px', height: '8px', border: `1px solid ${C.crimson}`, background: i < deathSaves.failures ? C.crimson : 'transparent' }} />
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ width: '240px', height: '4px', background: '#1a1018', position: 'relative' }}>
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, height: '100%',
+                  width: `${Math.max(0, hpPct * 100)}%`,
+                  background: hpBarColor, transition: 'width .4s ease',
+                }}>
+                  {hpPct > 0 && <div style={{ position: 'absolute', right: '-1px', top: '-2px', bottom: '-2px', width: '2px', background: C.gold, opacity: 0.6 }} />}
+                </div>
+              </div>
+            )}
           </div>
           {/* Condition */}
           {(character.conditions ?? []).length === 0
@@ -226,6 +308,25 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
         <div onClick={() => setSheetOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: Z.panel - 1 }} />
         <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} onCharacterUpdate={onCharacterUpdate} />
       </>}
+
+      {gameOver && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.9)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          zIndex: Z.panel + 10,
+        }}>
+          <div style={{ ...TY.heading, fontSize: '1.6rem', color: C.crimson, letterSpacing: '.08em' }}>You have died.</div>
+          <div style={{ ...TY.action, color: C.textGhost, marginTop: SP.md, fontStyle: 'italic' }}>Barovia claims another soul.</div>
+          <button
+            onClick={onExit}
+            style={{
+              marginTop: SP.lg, ...TY.micro, letterSpacing: '.12em',
+              border: `1px solid ${C.border}`, color: C.textMuted,
+              background: 'none', padding: `${SP.sm} ${SP.lg}`, cursor: 'pointer',
+            }}
+          >Return to Barovia</button>
+        </div>
+      )}
 
     </div>
   )

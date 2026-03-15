@@ -27,6 +27,26 @@ export function parseTags(raw) {
       tags.push({ type: 'spellslot' })
       return ''
     })
+    .replace(/\[SHORTREST\]/g, () => {
+      tags.push({ type: 'shortrest' })
+      return ''
+    })
+    .replace(/\[LONGREST\]/g, () => {
+      tags.push({ type: 'longrest' })
+      return ''
+    })
+    .replace(/\[DEATHSAVE:([+-])\]/g, (_, v) => {
+      tags.push({ type: 'deathsave', success: v === '+' })
+      return ''
+    })
+    .replace(/\[DEAD\]/g, () => {
+      tags.push({ type: 'dead' })
+      return ''
+    })
+    .replace(/\[LEVELUP\]/g, () => {
+      tags.push({ type: 'levelup' })
+      return ''
+    })
     .trim()
 
   return { text, tags }
