@@ -43,6 +43,7 @@ export default function Setup({ onComplete }) {
           onKeyDown={e => e.key === 'Enter' && ready && onComplete(name.trim(), cls)}
           placeholder="Enter your name..."
           maxLength={40}
+          autoComplete="new-password"
           autoFocus
           style={{
             background: 'transparent', border: 'none', borderBottom: `1px solid ${C.border}`,
