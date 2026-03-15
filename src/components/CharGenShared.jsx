@@ -17,7 +17,7 @@ export const Reroll = ({ onClick }) => (
     onClick={onClick}
     style={{
       background: 'none', border: 'none', color: C.textGhost, cursor: 'pointer',
-      ...TY.body, lineHeight: 1, padding: '0 .1rem', transition: 'color .15s',
+      fontSize: '.55rem', lineHeight: 1, padding: '0 .1rem', transition: 'color .15s',
     }}
     onMouseEnter={e => e.currentTarget.style.color = C.textMuted}
     onMouseLeave={e => e.currentTarget.style.color = C.textGhost}

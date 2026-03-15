@@ -12,9 +12,9 @@ export default function CharGenTraits({ sheet, bg, rerollTrait, prevBackground, 
             ...TY.label, color: C.gold, marginBottom: SP.xs,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <button onClick={prevBackground} style={{ background: 'none', color: C.textGhost, ...TY.micro, cursor: 'pointer', padding: '0 4px' }}>‹</button>
+            <button onClick={prevBackground} style={{ background: 'none', color: C.textMuted, fontSize: '1rem', lineHeight: 1, cursor: 'pointer', padding: '0 4px' }}>‹</button>
             <span>{sheet.background}</span>
-            <button onClick={nextBackground} style={{ background: 'none', color: C.textGhost, ...TY.micro, cursor: 'pointer', padding: '0 4px' }}>›</button>
+            <button onClick={nextBackground} style={{ background: 'none', color: C.textMuted, fontSize: '1rem', lineHeight: 1, cursor: 'pointer', padding: '0 4px' }}>›</button>
           </div>
           <div style={{ ...TY.caption, color: C.textDim, fontStyle: 'italic', marginBottom: SP.sm }}>{bg.desc}</div>
           <div style={{ height: '1px', background: C.border, marginBottom: SP.sm }} />
