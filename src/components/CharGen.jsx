@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CLASS_CONFIG } from '../data/classes.js'
+import SettingsButton from './SettingsButton.jsx'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SK, mod } from '../lib/dnd.js'
 import { generateSheet, pick } from '../lib/chargen.js'
@@ -9,7 +10,7 @@ import CharGenStats from './CharGenStats.jsx'
 import CharGenCombat from './CharGenCombat.jsx'
 import CharGenTraits from './CharGenTraits.jsx'
 
-export default function CharGen({ character, onComplete }) {
+export default function CharGen({ character, onComplete, volume, setVolume, muted, toggleMute }) {
   const [sheet, setSheet] = useState(() => generateSheet(character.class))
   const [locked, setLocked] = useState({ stats: {} })
   const [rerolls, setRerolls] = useState(3)
@@ -81,6 +82,7 @@ export default function CharGen({ character, onComplete }) {
             <div className="cg-identity">{character.class} · Lv 1 · {sheet.background}</div>
           </div>
           <div className="cg-actions">
+            <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="cg-btn cg-reroll rbtn" />
             <button className="cg-btn cg-reroll rbtn" onClick={doReroll} disabled={rerolls <= 0}>
               Reroll ({rerolls} left)
             </button>

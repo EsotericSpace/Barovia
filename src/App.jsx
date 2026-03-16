@@ -3,6 +3,7 @@ import Barovia from './components/Barovia.jsx'
 import Setup from './components/Setup.jsx'
 import CharGen from './components/CharGen.jsx'
 import Play from './components/Play.jsx'
+import { useMusic } from './hooks/useMusic.js'
 
 const SAVE_KEY = 'barovia_save'
 
@@ -13,10 +14,13 @@ function loadSave() {
   } catch { return null }
 }
 
+
 export default function App() {
   const saved = loadSave()
   const [phase, setPhase] = useState(saved?.phase ?? 'landing')
   const [character, setCharacter] = useState(saved?.character ?? null)
+  const { volume, setVolume, muted, toggleMute, startAudio } = useMusic(!!(character?.activeMonster))
+  const audioProps = { volume, setVolume, muted, toggleMute }
 
   useEffect(() => {
     if (phase === 'play' && character) {
@@ -31,29 +35,26 @@ export default function App() {
     setPhase('setup')
   }
 
-  if (phase === 'landing') {
-    return (
+  const screen = (() => {
+    if (phase === 'landing') return (
       <Barovia
         onEnter={newGame}
         hasSave={!!saved}
         onContinue={() => setPhase('play')}
+        startAudio={startAudio}
+        {...audioProps}
       />
     )
-  }
-
-  if (phase === 'setup') {
-    return (
+    if (phase === 'setup') return (
       <Setup
         onComplete={(name, cls) => {
           setCharacter({ name, class: cls })
           setPhase('chargen')
         }}
+        {...audioProps}
       />
     )
-  }
-
-  if (phase === 'chargen') {
-    return (
+    if (phase === 'chargen') return (
       <CharGen
         character={character}
         onComplete={(sheet) => {
@@ -68,18 +69,21 @@ export default function App() {
           }))
           setPhase('play')
         }}
+        {...audioProps}
       />
     )
-  }
+    return (
+      <Play
+        character={character}
+        onCharacterUpdate={c => {
+          const next = typeof c === 'function' ? c(character) : c
+          setCharacter(next)
+        }}
+        onExit={() => setPhase('landing')}
+        {...audioProps}
+      />
+    )
+  })()
 
-  return (
-    <Play
-      character={character}
-      onCharacterUpdate={c => {
-        const next = typeof c === 'function' ? c(character) : c
-        setCharacter(next)
-      }}
-      onExit={() => setPhase('landing')}
-    />
-  )
+  return <>{screen}</>
 }

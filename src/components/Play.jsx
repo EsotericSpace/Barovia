@@ -8,6 +8,7 @@ import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
 import { CONDITIONS } from '../data/conditions.js'
+import SettingsButton from './SettingsButton.jsx'
 
 const MSGS_KEY = 'barovia_msgs'
 
@@ -30,7 +31,7 @@ const SKILL_MAP = {
 
 function rollD20() { return Math.floor(Math.random() * 20) + 1 }
 
-export default function Play({ character, onCharacterUpdate, onExit }) {
+export default function Play({ character, onCharacterUpdate, onExit, volume, setVolume, muted, toggleMute }) {
   const saved = loadMsgs()
   const [msgs, setMsgs] = useState(saved?.display ?? [])
   const [input, setInput] = useState('')
@@ -275,10 +276,13 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
           }
         </div>
 
-        <button
-          className={`sheet-btn shbtn${sheetOpen ? ' open' : ''}`}
-          onClick={() => setSheetOpen(o => !o)}
-        >Character Sheet</button>
+        <div className="topbar-right">
+          <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="sheet-btn shbtn" />
+          <button
+            className={`sheet-btn shbtn${sheetOpen ? ' open' : ''}`}
+            onClick={() => setSheetOpen(o => !o)}
+          >Character Sheet</button>
+        </div>
       </div>
 
       <PlayMessages msgs={msgs} loading={loading} bottomRef={bottomRef} />

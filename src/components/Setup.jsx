@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { CLASSES, CLASS_CONFIG } from '../data/classes.js'
 import BaroviaFX from './BaroviaFX.jsx'
+import SettingsButton from './SettingsButton.jsx'
 
-export default function Setup({ onComplete }) {
+export default function Setup({ onComplete, volume, setVolume, muted, toggleMute }) {
   const [name, setName] = useState('')
   const [cls, setCls] = useState('')
   const [t, setT] = useState(0)
@@ -65,11 +66,14 @@ export default function Setup({ onComplete }) {
         </div>
       </div>
 
-      <button
-        className="setup-enter ebtn anim-fade-up delay-2"
-        onClick={() => ready && onComplete(name.trim(), cls)}
-        disabled={!ready}
-      >Roll Your Fate</button>
+      <div className="setup-enter-row anim-fade-up delay-2">
+        <button
+          className="setup-enter ebtn"
+          onClick={() => ready && onComplete(name.trim(), cls)}
+          disabled={!ready}
+        >Roll Your Fate</button>
+        <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="setup-enter ebtn" />
+      </div>
     </div>
   )
 }
