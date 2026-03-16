@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
-import { C, TY, SP } from '../lib/tokens.js'
 import { SK, mod } from '../lib/dnd.js'
 import { generateSheet, pick } from '../lib/chargen.js'
 import { SPELL_ASSIGNMENTS } from '../data/spells.js'
@@ -73,46 +72,25 @@ export default function CharGen({ character, onComplete }) {
   const profLevel = name => sheet.expertise.includes(name) ? 2 : allProfs.includes(name) ? 1 : 0
 
   return (
-    <div style={{ height: '100vh', overflowY: 'auto', background: C.bg, ...TY.body, color: C.textPrimary }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+    <div className="cg-page">
+      <div className="cg-inner">
 
-        {/* Header */}
-        <div className="chargen-header" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${C.border}`, paddingBottom: SP.md, marginBottom: SP.lg,
-        }}>
-          <div style={{ display: 'inline-flex', flexDirection: 'column', padding: SP.sm }}>
-            <div style={{ ...TY.heading, fontSize: 'clamp(.9rem,3vw,1.3rem)', color: C.gold, lineHeight: 1 }}>
-              {character.name}
-            </div>
-            <div style={{ ...TY.caption, fontFamily: "'Cinzel', serif", color: C.textMuted, marginTop: SP.xs, lineHeight: 1 }}>
-              {character.class} · Lv 1 · {sheet.background}
-            </div>
+        <div className="chargen-header">
+          <div style={{ display: 'inline-flex', flexDirection: 'column', padding: 'var(--sp-sm)' }}>
+            <div className="cg-name">{character.name}</div>
+            <div className="cg-identity">{character.class} · Lv 1 · {sheet.background}</div>
           </div>
-          <div style={{ display: 'flex', gap: SP.sm, alignItems: 'center' }}>
-            <button
-              className="rbtn" onClick={doReroll} disabled={rerolls <= 0}
-              style={{
-                background: 'transparent', ...TY.label,
-                border: `1px solid ${rerolls > 0 ? C.textGhost : C.border}`,
-                color: rerolls > 0 ? C.textMuted : C.textGhost,
-                cursor: rerolls > 0 ? 'pointer' : 'default',
-                padding: '.38rem .9rem', lineHeight: 1,
-              }}
-            >Reroll ({rerolls} left)</button>
-            <button
-              className="ebtn" onClick={() => onComplete(sheet)}
-              style={{
-                background: 'transparent', ...TY.label,
-                border: `1px solid ${C.crimson}`, color: C.gold,
-                padding: '.38rem 1.1rem', cursor: 'pointer', lineHeight: 1,
-              }}
-            >Enter the Mists</button>
+          <div className="cg-actions">
+            <button className="cg-btn cg-reroll rbtn" onClick={doReroll} disabled={rerolls <= 0}>
+              Reroll ({rerolls} left)
+            </button>
+            <button className="cg-btn cg-enter ebtn" onClick={() => onComplete(sheet)}>
+              Enter the Mists
+            </button>
           </div>
         </div>
 
-        {/* Three columns */}
-        <div className="chargen-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: SP.xl, alignItems: 'start' }}>
+        <div className="chargen-cols">
           <CharGenStats
             sheet={sheet} character={character} cfg={cfg}
             locked={locked} toggleStatLock={toggleStatLock}

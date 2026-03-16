@@ -1,32 +1,32 @@
-// Single source of truth — import across all components
+// Design token references — values live in index.css :root
 
 export const C = {
-  bg:              '#060608',
-  surface:         '#0d0a0f',
-  border:          '#2e1e28',
-  crimson:         '#a02828',
-  gold:            '#c4a35a',
-  textPrimary:     '#d4c9b0',
-  textMuted:       '#a89880',
-  textDim:         '#7a6555',
-  textGhost:       '#5a4a40',
-  ooc:             '#4a5a6a',
-  oocBorder:       '#1a2a3a',
-  icBorder:        '#3a1a1a',
-  rollSuccess:     '#4a9a5a',
-  rollSuccessClose:'#6aaa7a',
-  rollFailClose:   '#8a4a4a',
-  rollFail:        '#9a2a2a',
-  rollNat20:       '#d4af37',
-  rollNat1:        '#7a1a1a',
+  bg:              'var(--color-bg)',
+  surface:         'var(--color-surface)',
+  border:          'var(--color-border)',
+  crimson:         'var(--color-crimson)',
+  gold:            'var(--color-gold)',
+  textPrimary:     'var(--color-text-primary)',
+  textMuted:       'var(--color-text-muted)',
+  textDim:         'var(--color-text-dim)',
+  textGhost:       'var(--color-text-ghost)',
+  ooc:             'var(--color-ooc)',
+  oocBorder:       'var(--color-ooc-border)',
+  icBorder:        'var(--color-ic-border)',
+  rollSuccess:     'var(--color-roll-success)',
+  rollSuccessClose:'var(--color-roll-success-close)',
+  rollFailClose:   'var(--color-roll-fail-close)',
+  rollFail:        'var(--color-roll-fail)',
+  rollNat20:       'var(--color-roll-nat20)',
+  rollNat1:        'var(--color-roll-nat1)',
 }
 
 export const SP = {
-  xs:        '4px',
-  sm:        '8px',
-  md:        '12px',
-  lg:        '24px',
-  xl:        '48px',
+  xs:        'var(--sp-xs)',
+  sm:        'var(--sp-sm)',
+  md:        'var(--sp-md)',
+  lg:        'var(--sp-lg)',
+  xl:        'var(--sp-xl)',
   component: '.35rem .65rem',
   section:   '1.1rem',
   page:      '1.75rem 1.5rem',
@@ -45,17 +45,19 @@ export const ANIM = {
   blink:   'blink 1.2s ease-in-out infinite',
 }
 
-// Typography — use as spread: style={{ ...TY.body, color: C.textPrimary }}
+// TY — used by play components not yet migrated to CSS classes.
+// Chargen components use className instead (see index.css).
 export const TY = {
-  display: { fontFamily: "'Cinzel', serif", fontSize: 'clamp(2.8rem,10vw,5.5rem)', fontWeight: 700, letterSpacing: '.25em' },
-  heading: { fontFamily: "'Cinzel', serif", fontSize: '1.1rem', fontWeight: 600, letterSpacing: '.12em' },
-  label:   { fontFamily: "'Cinzel', serif", fontSize: '.55rem', letterSpacing: '.2em',  textTransform: 'uppercase' },
-  micro:   { fontFamily: "'Cinzel', serif", fontSize: '.45rem', letterSpacing: '.06em', textTransform: 'uppercase' },
-  body:    { fontFamily: "'Crimson Text', serif", fontSize: '1.05rem', lineHeight: '1.85' },
-  action:  { fontFamily: "'Crimson Text', serif", fontSize: '.95rem',  lineHeight: '1.65', fontStyle: 'italic' },
-  ooc:     { fontFamily: "'Crimson Text', serif", fontSize: '.88rem',  lineHeight: '1.65', fontStyle: 'italic' },
-  helper:  { fontFamily: "'Crimson Text', serif", fontSize: '.75rem',  lineHeight: '1.45' },
-  caption: { fontFamily: "'Crimson Text', serif", fontSize: '.65rem',  lineHeight: '1.5'  },
+  display:   { fontFamily: "'Cinzel', serif", fontSize: 'clamp(3rem,12vw,6rem)',       fontWeight: 700, letterSpacing: '.25em',  textTransform: 'uppercase', color: C.gold },
+  heading:   { fontFamily: "'Cinzel', serif", fontSize: 'clamp(1.2rem,4vw,1.75rem)',   fontWeight: 600, letterSpacing: '.12em',  textTransform: 'uppercase', color: C.gold },
+  subheader: { fontFamily: "'Cinzel', serif", fontSize: 'clamp(.65rem,1.8vw,.8rem)',                    letterSpacing: '.14em',  textTransform: 'uppercase', color: C.textMuted },
+  label:     { fontFamily: "'Cinzel', serif", fontSize: 'clamp(.5rem,1.3vw,.62rem)',                    letterSpacing: '.18em',  textTransform: 'uppercase', color: C.textMuted },
+  micro:     { fontFamily: "'Cinzel', serif", fontSize: 'clamp(.5rem,1.3vw,.62rem)',                    letterSpacing: '.12em',  textTransform: 'uppercase', color: C.textDim },
+  body:      { fontFamily: "'Crimson Text', serif", fontSize: 'clamp(.9rem,2.2vw,1.05rem)',  lineHeight: '1.9',  color: C.textPrimary },
+  action:    { fontFamily: "'Crimson Text', serif", fontSize: 'clamp(.9rem,2.2vw,1.05rem)',  lineHeight: '1.9',  fontStyle: 'italic', color: C.textGhost },
+  ooc:       { fontFamily: "'Crimson Text', serif", fontSize: 'clamp(.9rem,2.2vw,1.05rem)',  lineHeight: '1.9',  fontStyle: 'italic', color: C.ooc },
+  helper:    { fontFamily: "'Crimson Text', serif", fontSize: 'clamp(.72rem,1.8vw,.82rem)',  lineHeight: '1.5',  color: C.textPrimary },
+  caption:   { fontFamily: "'Crimson Text', serif", fontSize: 'clamp(.65rem,1.5vw,.75rem)',  lineHeight: '1.45', color: C.textGhost },
 }
 
 // Borders

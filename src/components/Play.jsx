@@ -3,7 +3,6 @@ import { parseTags } from '../lib/parseTags.js'
 import { buildSystemPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
-import { C, TY, SP, Z } from '../lib/tokens.js'
 import { mod } from '../lib/dnd.js'
 import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
@@ -53,7 +52,7 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
   }, [msgs])
 
   useEffect(() => {
-    if (saved?.display?.length) return // resume from save, skip init
+    if (saved?.display?.length) return
     sysRef.current = buildSystemPrompt(character)
     const init = [{ role: 'user', content: 'Begin.' }]
     callDM(init).then(({ text, tags }) => {
@@ -219,112 +218,82 @@ export default function Play({ character, onCharacterUpdate, onExit }) {
   const isDying = character.hp === 0
   const hpPct = character.hp / (character.maxHp || 1)
   const hpState = isDying ? 'dying' : hpPct <= 0.25 ? 'danger' : hpPct <= 0.5 ? 'hurt' : 'healthy'
-  const hpNumColor = hpState === 'dying' ? C.crimson : hpState === 'danger' ? C.crimson : hpState === 'hurt' ? '#a07050' : '#c8bba0'
-  const hpBarColor = hpState === 'danger' ? '#3a1010' : hpState === 'hurt' ? '#6a1a1a' : C.crimson
   const deathSaves = character.deathSaves ?? { successes: 0, failures: 0 }
   const showDeathSaves = isDying && (character.level ?? 1) >= 3
   const bg = BACKGROUNDS[character.background]
 
   return (
-    <div style={{ height: '100vh', background: C.bg, display: 'flex', flexDirection: 'column', ...TY.body, color: C.textPrimary, position: 'relative' }}>
+    <div className="play-page">
 
-      {/* Top bar */}
-      <div className="topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `.55rem ${SP.section}`, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
-        <button
-          onClick={onExit}
-          style={{
-            background: 'none', border: 'none', color: C.textGhost,
-            ...TY.micro, cursor: 'pointer', padding: 0, letterSpacing: '.08em',
-          }}
-        >✦  Barovia</button>
-        <div className="topbar-center" style={{ display: 'flex', alignItems: 'center', gap: SP.lg }}>
-          {/* HP — concept D */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-              <span className={hpState === 'danger' || hpState === 'dying' ? 'hpdanger' : ''} style={{ ...TY.heading, fontSize: '.7rem', fontWeight: 600, color: hpNumColor, lineHeight: 1 }}>{character.hp}</span>
-              <span style={{ ...TY.micro, color: C.gold }}>/</span>
-              <span style={{ ...TY.heading, fontSize: '.7rem', fontWeight: 600, color: C.textMuted, lineHeight: 1 }}>{character.maxHp}</span>
-              <span style={{ ...TY.micro, color: C.textMuted, letterSpacing: '.08em', marginLeft: '2px' }}>HP</span>
+      <div className="topbar">
+        <button className="topbar-exit" onClick={onExit}>✦  Barovia</button>
+
+        <div className="topbar-center">
+          <div className="hp-display">
+            <div className="hp-nums">
+              <span className={`hp-current ${hpState}${hpState === 'danger' || hpState === 'dying' ? ' hpdanger' : ''}`}>{character.hp}</span>
+              <span className="hp-sep">/</span>
+              <span className="hp-max">{character.maxHp}</span>
+              <span className="hp-label">HP</span>
             </div>
             {showDeathSaves ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ display: 'flex', gap: '3px' }}>
+              <div className="death-saves">
+                <div className="ds-dots">
                   {[0,1,2].map(i => (
-                    <div key={i} style={{ width: '8px', height: '8px', border: `1px solid ${C.gold}`, background: i < deathSaves.successes ? C.gold : 'transparent' }} />
+                    <div key={i} className={`ds-dot${i < deathSaves.successes ? ' filled' : ''}`} />
                   ))}
                 </div>
-                <div style={{ ...TY.micro, color: C.textGhost, lineHeight: 1 }}>·</div>
-                <div style={{ display: 'flex', gap: '3px' }}>
+                <div className="ds-sep">·</div>
+                <div className="ds-dots">
                   {[0,1,2].map(i => (
-                    <div key={i} style={{ width: '8px', height: '8px', border: `1px solid ${C.crimson}`, background: i < deathSaves.failures ? C.crimson : 'transparent' }} />
+                    <div key={i} className={`ds-dot fail${i < deathSaves.failures ? ' filled' : ''}`} />
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="hp-bar" style={{ width: '240px', height: '4px', background: '#1a1018', position: 'relative' }}>
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, height: '100%',
-                  width: `${Math.max(0, hpPct * 100)}%`,
-                  background: hpBarColor, transition: 'width .4s ease',
-                }}>
-                  {hpPct > 0 && <div style={{ position: 'absolute', right: '-1px', top: '-2px', bottom: '-2px', width: '2px', background: C.gold, opacity: 0.6 }} />}
+              <div className="hp-bar">
+                <div
+                  className={`hp-bar-fill ${hpState}`}
+                  style={{ width: `${Math.max(0, hpPct * 100)}%` }}
+                >
+                  {hpPct > 0 && <div className="hp-bar-edge" />}
                 </div>
               </div>
             )}
           </div>
-          {/* Condition */}
+
           {(character.conditions ?? []).length === 0
-            ? <span style={{ ...TY.micro, color: C.textMuted, letterSpacing: '.06em', border: `1px solid ${C.border}`, padding: '1px 5px' }}>Fine</span>
+            ? <span className="condition-fine">Fine</span>
             : (character.conditions ?? []).map(key => (
               <button
                 key={key}
+                className="condition-btn"
                 onClick={() => onCharacterUpdate(c => ({ ...c, conditions: c.conditions.filter(k => k !== key) }))}
                 title={`${CONDITIONS[key]?.desc} · Click to remove`}
-                style={{
-                  ...TY.micro, letterSpacing: '.06em',
-                  background: 'rgba(160,40,40,.15)', border: `1px solid ${C.crimson}`,
-                  color: C.crimson, padding: '1px 5px', cursor: 'pointer',
-                }}
               >{CONDITIONS[key]?.label ?? key}</button>
             ))
           }
         </div>
+
         <button
-          className="shbtn"
+          className={`sheet-btn shbtn${sheetOpen ? ' open' : ''}`}
           onClick={() => setSheetOpen(o => !o)}
-          style={{
-            background: sheetOpen ? `rgba(160,40,40,.15)` : 'transparent',
-            border: `1px solid ${sheetOpen ? C.crimson : C.border}`,
-            color: sheetOpen ? C.gold : C.textDim,
-            ...TY.micro, fontSize: '.52rem', letterSpacing: '.1em',
-            padding: '.22rem .65rem', cursor: 'pointer', transition: 'all .2s',
-          }}
         >Character Sheet</button>
       </div>
 
       <PlayMessages msgs={msgs} loading={loading} bottomRef={bottomRef} />
       <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} />
+
       {sheetOpen && <>
-        <div onClick={() => setSheetOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: Z.panel - 1 }} />
+        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} />
         <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} onCharacterUpdate={onCharacterUpdate} />
       </>}
 
       {gameOver && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.9)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          zIndex: Z.panel + 10,
-        }}>
-          <div style={{ ...TY.heading, fontSize: '1.6rem', color: C.crimson, letterSpacing: '.08em' }}>You have died.</div>
-          <div style={{ ...TY.action, color: C.textGhost, marginTop: SP.md, fontStyle: 'italic' }}>Barovia claims another soul.</div>
-          <button
-            onClick={onExit}
-            style={{
-              marginTop: SP.lg, ...TY.micro, letterSpacing: '.12em',
-              border: `1px solid ${C.border}`, color: C.textMuted,
-              background: 'none', padding: `${SP.sm} ${SP.lg}`, cursor: 'pointer',
-            }}
-          >Return to Barovia</button>
+        <div className="game-over-overlay">
+          <div className="game-over-title">You have died.</div>
+          <div className="game-over-body">Barovia claims another soul.</div>
+          <button className="game-over-return ebtn" onClick={onExit}>Return to Barovia</button>
         </div>
       )}
 

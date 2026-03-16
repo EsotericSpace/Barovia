@@ -1,27 +1,22 @@
-import { C, TY, SP } from '../lib/tokens.js'
 import { SK, SA, modStr } from '../lib/dnd.js'
 import { SL, LK } from './CharGenShared.jsx'
 
 export default function CharGenStats({ sheet, character, cfg, locked, toggleStatLock }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: SP.md }}>
+    <div className="cg-col">
 
       <div>
         <SL>Ability Scores</SL>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: SP.xs }}>
+        <div className="stat-grid">
           {SK.map(k => {
             const isLocked = !!locked.stats?.[k]
             const isPri = cfg.pri.includes(k)
             return (
-              <div key={k} style={{
-                border: `1px solid ${isPri ? C.crimson : C.border}`,
-                padding: '6px 4px', textAlign: 'center', position: 'relative',
-                background: isPri ? 'rgba(160,40,40,.04)' : 'transparent',
-              }}>
+              <div key={k} className={`stat-cell${isPri ? ' primary' : ''}`}>
                 <LK on={isLocked} toggle={() => toggleStatLock(k)} />
-                <div style={{ ...TY.micro, color: isPri ? C.textDim : C.textGhost }}>{SA[k]}</div>
-                <div style={{ ...TY.heading, fontSize: '1.2rem', color: C.textPrimary, lineHeight: 1.1 }}>{sheet.stats[k]}</div>
-                <div style={{ ...TY.label, color: C.crimson }}>{modStr(sheet.stats[k])}</div>
+                <div className="stat-key">{SA[k]}</div>
+                <div className="stat-val">{sheet.stats[k]}</div>
+                <div className="stat-mod">{modStr(sheet.stats[k])}</div>
               </div>
             )
           })}
@@ -30,12 +25,12 @@ export default function CharGenStats({ sheet, character, cfg, locked, toggleStat
 
       <div>
         <SL>Class Features · {character.class} 1</SL>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: SP.sm }}>
+        <div className="feature-list">
           {cfg.features.map((f, i) => (
             <div key={f.name}>
-              {i > 0 && <div style={{ height: '1px', background: C.border, marginBottom: SP.sm }} />}
-              <div style={{ ...TY.micro, color: C.textDim, marginBottom: '2px' }}>{f.name}</div>
-              <div style={{ ...TY.caption, color: C.textGhost }}>{f.desc}</div>
+              {i > 0 && <div className="feature-divider" />}
+              <div className="feature-name">{f.name}</div>
+              <div className="feature-desc">{f.desc}</div>
             </div>
           ))}
         </div>
@@ -44,24 +39,24 @@ export default function CharGenStats({ sheet, character, cfg, locked, toggleStat
       {sheet.cantrips?.length > 0 && (
         <div>
           <SL>Spells</SL>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div className="spell-list">
             {sheet.spellSlots?.length > 0 && (
-              <div style={{ ...TY.caption, color: C.textDim, marginBottom: SP.xs }}>
+              <div className="spell-slots-info">
                 {sheet.spellSlots.map(s => `${s.total} × L${s.level}`).join(', ')} · {sheet.shortRestCaster ? 'short rest' : 'long rest'}
               </div>
             )}
             {sheet.cantrips.map(s => (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: SP.xs }}>
-                <span style={{ ...TY.micro, color: C.textGhost, fontSize: '.4rem' }}>◆</span>
-                <span style={{ ...TY.caption, color: C.textMuted }}>{s}</span>
-                <span style={{ ...TY.micro, color: C.textGhost, marginLeft: 'auto' }}>cantrip</span>
+              <div key={s} className="spell-row">
+                <span className="spell-dot cantrip">◆</span>
+                <span className="spell-name">{s}</span>
+                <span className="spell-tier">cantrip</span>
               </div>
             ))}
             {sheet.spellsKnown.map(s => (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: SP.xs }}>
-                <span style={{ ...TY.micro, color: C.crimson, fontSize: '.4rem' }}>◆</span>
-                <span style={{ ...TY.caption, color: C.textMuted }}>{s}</span>
-                <span style={{ ...TY.micro, color: C.textGhost, marginLeft: 'auto' }}>1st</span>
+              <div key={s} className="spell-row">
+                <span className="spell-dot known">◆</span>
+                <span className="spell-name">{s}</span>
+                <span className="spell-tier">1st</span>
               </div>
             ))}
           </div>
