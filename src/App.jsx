@@ -3,6 +3,7 @@ import Barovia from './components/Barovia.jsx'
 import Setup from './components/Setup.jsx'
 import CharGen from './components/CharGen.jsx'
 import Play from './components/Play.jsx'
+import SettingsButton from './components/SettingsButton.jsx'
 import { useMusic } from './hooks/useMusic.js'
 
 const SAVE_KEY = 'barovia_save'
@@ -57,6 +58,7 @@ export default function App() {
     if (phase === 'chargen') return (
       <CharGen
         character={character}
+        onBack={() => setPhase('setup')}
         onComplete={(sheet) => {
           setCharacter(c => ({
             ...c, ...sheet,
@@ -86,5 +88,10 @@ export default function App() {
     )
   })()
 
-  return <>{screen}</>
+  return (
+    <>
+      {screen}
+      <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="app-settings" />
+    </>
+  )
 }

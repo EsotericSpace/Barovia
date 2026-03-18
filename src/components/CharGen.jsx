@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { CLASS_CONFIG } from '../data/classes.js'
-import SettingsButton from './SettingsButton.jsx'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SK, mod } from '../lib/dnd.js'
 import { generateSheet, pick } from '../lib/chargen.js'
@@ -10,7 +9,7 @@ import CharGenStats from './CharGenStats.jsx'
 import CharGenCombat from './CharGenCombat.jsx'
 import CharGenTraits from './CharGenTraits.jsx'
 
-export default function CharGen({ character, onComplete, volume, setVolume, muted, toggleMute }) {
+export default function CharGen({ character, onComplete, onBack }) {
   const [sheet, setSheet] = useState(() => generateSheet(character.class))
   const [locked, setLocked] = useState({ stats: {} })
   const [rerolls, setRerolls] = useState(3)
@@ -73,12 +72,16 @@ export default function CharGen({ character, onComplete, volume, setVolume, mute
       <div className="cg-inner">
 
         <div className="chargen-header">
-          <div style={{ display: 'inline-flex', flexDirection: 'column', padding: 'var(--sp-sm)' }}>
+          <div className="cg-header-left">
+            <button className="cg-back-btn" onClick={onBack}>
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+          </div>
+          <div className="cg-header-center">
             <div className="cg-name">{character.name}</div>
             <div className="cg-identity">{sheet.subclass} {character.class} · {sheet.background}</div>
           </div>
-          <div className="cg-actions">
-            <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="cg-btn cg-reroll rbtn" />
+          <div className="cg-header-right">
             <button className="cg-btn cg-enter ebtn cg-enter-header" onClick={() => onComplete(sheet)}>
               Enter the Mists
             </button>
@@ -132,8 +135,8 @@ export default function CharGen({ character, onComplete, volume, setVolume, mute
           </div>
         </div>
 
-        <div className="cg-footer">
-          <button className="cg-btn cg-enter ebtn" onClick={() => onComplete(sheet)}>
+        <div className="page-footer">
+          <button className="cg-btn cg-enter ebtn btn-mobile-cta" onClick={() => onComplete(sheet)}>
             Enter the Mists
           </button>
         </div>

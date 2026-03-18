@@ -10,7 +10,6 @@ import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
 import { CONDITIONS } from '../data/conditions.js'
-import SettingsButton from './SettingsButton.jsx'
 
 const MSGS_KEY = 'barovia_msgs'
 
@@ -58,12 +57,12 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
   const [gameOver, setGameOver] = useState(false)
   const histRef   = useRef(saved?.history ?? [])
   const sysRef    = useRef('')
-  const bottomRef = useRef(null)
+  const latestRef = useRef(null)
   const taRef     = useRef(null)
   const charRef   = useRef(character)
 
   useEffect(() => { charRef.current = character }, [character])
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, loading])
+  useEffect(() => { latestRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [msgs, loading])
   useEffect(() => {
     if (msgs.length > 0) {
       localStorage.setItem(MSGS_KEY, JSON.stringify({ display: msgs, history: histRef.current }))
@@ -260,67 +259,16 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
   return (
     <div className="play-page">
 
-      <div className="topbar">
-        <button className="topbar-exit" onClick={onExit}>✦  Barovia</button>
+      <button className="topbar-exit" onClick={sheetOpen ? () => setSheetOpen(false) : onExit}>
+        <span className="material-symbols-outlined">{sheetOpen ? 'close' : 'logout'}</span>
+      </button>
 
-        <div className="topbar-center">
-          <div className="hp-display">
-            <div className="hp-nums">
-              <span className={`hp-current ${hpState}${hpState === 'danger' || hpState === 'dying' ? ' hpdanger' : ''}`}>{character.hp}</span>
-              <span className="hp-sep">/</span>
-              <span className="hp-max">{character.maxHp}</span>
-              <span className="hp-label">HP</span>
-            </div>
-            {showDeathSaves ? (
-              <div className="death-saves">
-                <div className="ds-dots">
-                  {[0,1,2].map(i => (
-                    <div key={i} className={`ds-dot${i < deathSaves.successes ? ' filled' : ''}`} />
-                  ))}
-                </div>
-                <div className="ds-sep">·</div>
-                <div className="ds-dots">
-                  {[0,1,2].map(i => (
-                    <div key={i} className={`ds-dot fail${i < deathSaves.failures ? ' filled' : ''}`} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="hp-bar">
-                <div
-                  className={`hp-bar-fill ${hpState}`}
-                  style={{ width: `${Math.max(0, hpPct * 100)}%` }}
-                >
-                  {hpPct > 0 && <div className="hp-bar-edge" />}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {(character.conditions ?? []).length === 0
-            ? <span className="condition-fine">Fine</span>
-            : (character.conditions ?? []).map(key => (
-              <button
-                key={key}
-                className="condition-btn"
-                onClick={() => onCharacterUpdate(c => ({ ...c, conditions: c.conditions.filter(k => k !== key) }))}
-                title={`${CONDITIONS[key]?.desc} · Click to remove`}
-              >{CONDITIONS[key]?.label ?? key}</button>
-            ))
-          }
-        </div>
-
-        <div className="topbar-right">
-          <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="sheet-btn shbtn" />
-          <button
-            className={`sheet-btn shbtn${sheetOpen ? ' open' : ''}`}
-            onClick={() => setSheetOpen(o => !o)}
-          >Character Sheet</button>
-        </div>
+      <div className="play-header">
+        <span className="play-header-title">Barovia</span>
       </div>
 
-      <PlayMessages msgs={msgs} loading={loading} bottomRef={bottomRef} />
-      <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} />
+      <PlayMessages msgs={msgs} loading={loading} latestRef={latestRef} />
+      <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} sheetOpen={sheetOpen} onToggleSheet={() => setSheetOpen(o => !o)} />
 
       {sheetOpen && <>
         <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} />

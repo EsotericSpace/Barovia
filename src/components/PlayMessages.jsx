@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { LOCATIONS } from '../data/locations/index.js'
 
 function rollColorClass(total, dc) {
@@ -11,30 +12,33 @@ function rollColorClass(total, dc) {
   return 'roll-color-fail'
 }
 
-function Paragraphs({ content, className }) {
+const Paragraphs = forwardRef(function Paragraphs({ content, className }, ref) {
   return (
-    <div className={className}>
+    <div ref={ref} className={className}>
       {content.split(/\n\n+/).filter(Boolean).map((p, i) => (
         <p key={i}>{p.trim()}</p>
       ))}
     </div>
   )
-}
+})
 
-export default function PlayMessages({ msgs, loading, bottomRef }) {
+export default function PlayMessages({ msgs, loading, latestRef }) {
+  const lastIdx = msgs.length - 1
   return (
     <div className="play-msgs">
-      {msgs.map(m => {
+      {msgs.map((m, idx) => {
+        const isLast = idx === lastIdx
         if (m.role === 'assistant') return (
           <Paragraphs
             key={m.id}
+            ref={isLast ? latestRef : null}
             content={m.content}
             className={`msg-dm dm${m.ooc ? ' ooc' : ''}`}
           />
         )
 
         if (m.role === 'user') return (
-          <div key={m.id} className="msg-player player">
+          <div key={m.id} ref={isLast ? latestRef : null} className="msg-player player">
             <Paragraphs
               content={m.content}
               className={`msg-player-inner${m.ooc ? ' ooc' : ''}`}
@@ -46,7 +50,7 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
           const colorClass = rollColorClass(m.total, m.dc)
           const nat = m.d20 === 20 || m.d20 === 1
           return (
-            <div key={m.id} className="rollcard">
+            <div key={m.id} ref={isLast ? latestRef : null} className="rollcard">
               <div className="roll-total-wrap">
                 <div className={`roll-total ${colorClass}`}>{m.total}</div>
                 {nat && <div className={`roll-nat ${colorClass}`}>{m.d20 === 20 ? 'NAT 20' : 'NAT 1'}</div>}
@@ -65,7 +69,7 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
         }
 
         if (m.role === 'rest') return (
-          <div key={m.id} className="event-card">
+          <div key={m.id} ref={isLast ? latestRef : null} className="event-card">
             <div className="event-icon">{m.short ? '◑' : '○'}</div>
             <div>
               <div className="event-label">{m.short ? 'Short Rest' : 'Long Rest'}</div>
@@ -87,7 +91,7 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
             { label: "Strahd's Lair",         draw: m.reading.lair },
           ]
           return (
-            <div key={m.id} className="event-card tarokka">
+            <div key={m.id} ref={isLast ? latestRef : null} className="event-card tarokka">
               <div className="tarokka-header">
                 <div className="event-icon">✦</div>
                 <div className="event-label">Madam Eva's Prophecy</div>
@@ -109,7 +113,7 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
         }
 
         if (m.role === 'levelup') return (
-          <div key={m.id} className="event-card levelup">
+          <div key={m.id} ref={isLast ? latestRef : null} className="event-card levelup">
             <div className="event-icon">↑</div>
             <div>
               <div className="event-label">Level {m.level}</div>
@@ -128,7 +132,6 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
           ))}
         </div>
       )}
-      <div ref={bottomRef} />
     </div>
   )
 }

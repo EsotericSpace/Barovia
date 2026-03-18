@@ -1,4 +1,4 @@
-export default function PlayInput({ input, setInput, loading, send, onKey, taRef }) {
+export default function PlayInput({ input, setInput, loading, send, onKey, taRef, sheetOpen, onToggleSheet }) {
   const isOOC = input.startsWith('(')
   const ready = input.trim() && !loading
   return (
@@ -19,10 +19,18 @@ export default function PlayInput({ input, setInput, loading, send, onKey, taRef
         className={`play-textarea${isOOC ? ' ooc' : ''}`}
       />
       <button
+        className={`play-sheet-toggle shbtn${sheetOpen ? ' open' : ''}`}
+        onClick={onToggleSheet}
+      >
+        <span className="material-symbols-outlined">menu_book</span>
+      </button>
+      <button
         className={`play-send-btn ebtn${ready ? ' ready' : ''}`}
         onClick={send}
         disabled={!ready}
-      >{loading ? '···' : 'Send'}</button>
+      >
+        <span className="material-symbols-outlined">{loading ? 'more_horiz' : 'send'}</span>
+      </button>
     </div>
   )
 }

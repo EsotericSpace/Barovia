@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import BaroviaFX from './BaroviaFX.jsx'
-import SettingsButton from './SettingsButton.jsx'
 
 const letters = ["B", "a", "r", "o", "v", "i", "a"];
 
-export default function Barovia({ onEnter, hasSave, onContinue, startAudio, volume, setVolume, muted, toggleMute }) {
+export default function Barovia({ onEnter, hasSave, onContinue, startAudio }) {
   const [visible, setVisible] = useState(false);
   const [t, setT] = useState(0);
   const [enterVisible, setEnterVisible] = useState(false);
@@ -57,13 +56,12 @@ export default function Barovia({ onEnter, hasSave, onContinue, startAudio, volu
           pointerEvents: enterVisible ? "auto" : "none",
         }}>
           {hasSave && (
-            <button className="landing-btn ebtn" onClick={() => { startAudio(); onContinue() }}>Continue</button>
+            <button className="landing-btn ebtn btn-mobile-cta" onClick={() => { startAudio(); onContinue() }}>Continue</button>
           )}
           <button
-            className={`landing-btn ebtn${hasSave ? ' secondary' : ''}`}
+            className={`landing-btn ebtn btn-mobile-cta${hasSave ? ' secondary' : ''}`}
             onClick={() => { startAudio(); onEnter() }}
           >{hasSave ? 'New Game' : 'Enter'}</button>
-          <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="landing-btn secondary" />
         </div>
 
       </div>
