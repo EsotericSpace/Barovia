@@ -61,3 +61,35 @@ export const SPELL_ASSIGNMENTS = {
 }
 
 export const SPELLCASTING_CLASSES = new Set(Object.keys(SPELL_ASSIGNMENTS))
+
+// Spells added or substituted based on subclass choice.
+// Cleric: domain spells are always prepared — appended to known list.
+// Warlock: patron's signature level-1 spell replaces the background second spell; Hex stays.
+export const SUBCLASS_SPELLS = {
+  Cleric: {
+    Life:      ['Bless', 'Cure Wounds'],
+    Light:     ['Burning Hands', 'Faerie Fire'],
+    Knowledge: ['Command', 'Identify'],
+    Nature:    ['Animal Friendship', 'Speak with Animals'],
+    Tempest:   ['Fog Cloud', 'Thunderwave'],
+    Trickery:  ['Charm Person', 'Disguise Self'],
+    War:       ['Divine Favor', 'Shield of Faith'],
+  },
+  Warlock: {
+    'The Archfey':       ['Sleep'],
+    'The Fiend':         ['Burning Hands'],
+    'The Great Old One': ['Dissonant Whispers'],
+  },
+}
+
+export function applySubclassSpells(cls, subclass, cantrips, spells) {
+  const additions = SUBCLASS_SPELLS[cls]?.[subclass] ?? []
+  if (!additions.length) return { cantrips, spells }
+  if (cls === 'Cleric') {
+    return { cantrips, spells: [...new Set([...spells, ...additions])] }
+  }
+  if (cls === 'Warlock') {
+    return { cantrips, spells: ['Hex', ...additions] }
+  }
+  return { cantrips, spells }
+}

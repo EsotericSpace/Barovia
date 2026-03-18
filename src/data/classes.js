@@ -8,6 +8,11 @@ export const CLASS_CONFIG = {
       { name: 'Rage', desc: 'Advantage on STR checks and saves. Resistance to bludgeoning, piercing, and slashing damage. +2 damage bonus while raging.' },
       { name: 'Unarmored Defense', desc: 'AC equals 10 + DEX mod + CON mod when not wearing armor.' },
     ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Berserker', desc: 'Channel rage into reckless violence. Frenzied Rage lets you make a bonus attack each turn, at the cost of exhaustion after battle.' },
+      { name: 'Totem Warrior', desc: 'Adopt the spirit of an animal totem — bear, eagle, or wolf — gaining primal powers drawn from nature.' },
+    ],
     narrative: 'This barbarian\'s rage is already part of them — primal fury, ancestral spirits, or berserker instinct. Barovia\'s oppressive dread presses on them constantly; their rage is one of the few things that feels real and honest here. Lean into the tension between raw emotion and the land\'s psychological horror.',
   },
   Bard: {
@@ -18,6 +23,11 @@ export const CLASS_CONFIG = {
     features: [
       { name: 'Bardic Inspiration', desc: 'Give an ally a d6 they can add to any ability check, attack roll, or saving throw. Recharges on short rest.' },
       { name: 'Spellcasting', desc: 'CHA-based spellcasting. 2 cantrips known. 2 first-level spell slots. 2 spells known.' },
+    ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'College of Lore', desc: 'Widen your magical knowledge. Gain three bonus skill proficiencies and Cutting Words — a reaction that can hamper an enemy\'s roll.' },
+      { name: 'College of Valor', desc: 'Blend bardic magic with martial training. Gain medium armor, shields, and eventually Extra Attack.' },
     ],
     narrative: 'Bards are lore-keepers and performers. In Barovia, their knowledge of stories, legends, and history is unusually valuable — the land has a long, dark past that almost no one will speak of directly. The Vistani recognize skilled performers and may open up to them. A bard\'s magic comes from inspiration and emotion, which Barovia is not short of.',
   },
@@ -30,6 +40,16 @@ export const CLASS_CONFIG = {
       { name: 'Spellcasting', desc: 'WIS-based spellcasting. 3 cantrips. 2 first-level spell slots. All cleric spells are available to prepare each day.' },
       { name: 'Divine Domain', desc: 'Your deity grants a subclass at level 1. Adds bonus spells, proficiencies, and features.' },
     ],
+    subclassLevel: 1,
+    subclasses: [
+      { name: 'Life', desc: 'Channel divine healing to its fullest. Heavy armor proficiency and dramatically enhanced healing spells.' },
+      { name: 'Light', desc: 'Wield radiant fire against darkness. Bonus fire and radiant spells, and Warding Flare to impose disadvantage on incoming attacks.' },
+      { name: 'Knowledge', desc: 'Serve a god of secrets and learning. Temporarily gain proficiency in any skill and read the memories of objects.' },
+      { name: 'Nature', desc: 'Guard the natural world. Bonus druid cantrip, heavy armor, and Dampen Elements to reduce elemental damage to nearby allies.' },
+      { name: 'Tempest', desc: 'Command storms and lightning. Bonus thunder and lightning spells, heavy armor, and Destructive Wrath for maximum damage.' },
+      { name: 'Trickery', desc: 'Serve a deity of deception. Bonus illusion and deception spells, and an illusory duplicate of yourself to confuse enemies.' },
+      { name: 'War', desc: 'A cleric forged for battle. Martial weapon and heavy armor proficiency, and War Priest to make bonus weapon attacks.' },
+    ],
     narrative: 'This cleric already serves a deity — that relationship is established and real. In Barovia, divine magic functions but feels strained, as if prayers travel farther before being heard. Their god sent them here, or allowed them to come, for a reason neither may fully understand yet. Undead are abundant; Turn Undead is relevant and meaningful. Do not question whether their faith is real — it is.',
   },
   Druid: {
@@ -40,6 +60,11 @@ export const CLASS_CONFIG = {
     features: [
       { name: 'Druidic', desc: 'You know the secret language of druids, spoken only among the circle. Hidden messages can be left in nature.' },
       { name: 'Spellcasting', desc: 'WIS-based spellcasting. 2 cantrips. 2 first-level spell slots. Prepare spells each day from the druid list.' },
+    ],
+    subclassLevel: 2,
+    subclasses: [
+      { name: 'Circle of the Land', desc: 'Draw power from a chosen terrain type. Recover spell slots on short rests and gain bonus spells tied to your natural domain.' },
+      { name: 'Circle of the Moon', desc: 'Transform into powerful beasts. Wild Shape can become a CR 1 beast at level 2, scaling to CR 6 by level 9.' },
     ],
     narrative: 'Barovia\'s nature is deeply wrong — the forests are unnatural, animals behave strangely, and the land itself feels like it is in pain. A druid feels this wrongness acutely, like a persistent low sound no one else can hear. This is not their favored terrain; it is a corrupted one. Their connection to nature gives them unique insight into how badly Barovia has been wounded.',
   },
@@ -52,6 +77,12 @@ export const CLASS_CONFIG = {
       { name: 'Fighting Style', desc: 'Choose one: Archery (+2 to ranged attacks), Defense (+1 AC in armor), Dueling (+2 damage with one-handed weapon), or Great Weapon Fighting.' },
       { name: 'Second Wind', desc: 'Bonus action: regain 1d10 + fighter level HP once per short rest.' },
     ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Champion', desc: 'Optimize for raw martial power. Improved Critical (crits on 19–20) and Remarkable Athlete for superior physical feats.' },
+      { name: 'Battle Master', desc: 'A tactical warrior who learns combat maneuvers. Spend superiority dice to trip, disarm, bolster attacks, or redirect foes.' },
+      { name: 'Eldritch Knight', desc: 'Fuse swordsmanship with arcane magic. Learn abjuration and evocation spells, and eventually bond a weapon to your hand.' },
+    ],
     narrative: 'Fighters are disciplined, trained warriors. Their competence is reliable in a land full of threats. Barovia tests mental fortitude as much as physical — the horror is psychological. A fighter\'s training helps them stay functional under pressure, but no amount of sword practice prepares someone for what lives in these mists.',
   },
   Monk: {
@@ -62,6 +93,12 @@ export const CLASS_CONFIG = {
     features: [
       { name: 'Unarmored Defense', desc: 'AC equals 10 + DEX mod + WIS mod when not wearing armor or a shield.' },
       { name: 'Martial Arts', desc: 'Unarmed strikes and monk weapons deal 1d4. Use DEX instead of STR for attacks and damage.' },
+    ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Way of the Open Hand', desc: 'Master unarmed combat. Techniques to knock back, knock prone, or deny reactions after a Flurry of Blows.' },
+      { name: 'Way of Shadow', desc: 'A path of stealth and darkness. Spend ki to cast darkness, silence, and pass without trace — and teleport between shadows.' },
+      { name: 'Way of the Four Elements', desc: 'Bend the elements through ki — throw waves of fire, ride the wind, and strike with elemental force.' },
     ],
     narrative: 'A monk\'s power comes from inner discipline and ki — a force that Barovia\'s dark energy presses against constantly. Maintaining stillness of mind here is a genuine struggle. Their unarmed combat and mobility make them unusual in a land where everyone else relies on weapons. Locals may find them unsettling or strange.',
   },
@@ -74,6 +111,12 @@ export const CLASS_CONFIG = {
       { name: 'Divine Sense', desc: 'As an action, sense celestials, fiends, and undead within 60ft. Uses: 1 + CHA mod per long rest.' },
       { name: 'Lay on Hands', desc: 'Touch to restore HP from a 5-point pool. Spend 5 points to cure one disease or neutralize one poison.' },
     ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Oath of Devotion', desc: 'The classic holy knight. Sacred Weapon imbues your blade with radiance, and Aura of Devotion makes you and nearby allies immune to charm.' },
+      { name: 'Oath of the Ancients', desc: 'Protect the light of life itself. Nature-themed spells, Turn the Faithless against fey and fiends, and Aura of Warding to resist spell damage.' },
+      { name: 'Oath of Vengeance', desc: 'Hunt evil without mercy. Vow of Enmity grants advantage against a single foe, and Relentless Avenger lets you close the gap after a hit.' },
+    ],
     narrative: 'This paladin has already sworn their oath — it defines them. In Barovia, undead are everywhere and a paladin\'s Divine Smite and Turn Undead are among the most potent tools available. Their oath will be tested; Barovia specializes in moral ambiguity, impossible choices, and situations where no option is clean. Play into that tension without breaking them unnecessarily.',
   },
   Ranger: {
@@ -84,6 +127,11 @@ export const CLASS_CONFIG = {
     features: [
       { name: 'Favored Enemy', desc: 'Choose one creature type. Advantage on Survival checks to track them and on INT checks to recall information about them.' },
       { name: 'Natural Explorer', desc: 'Choose one favored terrain. Difficult terrain doesn\'t slow you there. Double proficiency on INT/WIS checks related to it.' },
+    ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Hunter', desc: 'Specialize in hunting specific prey. Choose from Colossus Slayer, Giant Killer, or Horde Breaker for focused damage, then gain defensive techniques at higher levels.' },
+      { name: 'Beast Master', desc: 'Bond with an animal companion that fights alongside you. The bond deepens as you level, eventually sharing your attacks.' },
     ],
     narrative: 'Rangers are hunters and trackers. Their favored terrain is unlikely to be Barovia\'s cursed forests, which means they are operating outside their comfort zone in a landscape that actively resists being read. Undead make for an excellent favored enemy here. Their Perception and Survival skills are constantly relevant in a land full of hidden threats.',
   },
@@ -97,6 +145,12 @@ export const CLASS_CONFIG = {
       { name: 'Sneak Attack', desc: '+1d6 damage once per turn when you have advantage or an ally is adjacent to the target.' },
       { name: "Thieves' Cant", desc: 'A secret criminal language of coded speech and signs, understood only by those in the trade.' },
     ],
+    subclassLevel: 3,
+    subclasses: [
+      { name: 'Thief', desc: 'Excel at infiltration and loot. Fast Hands for bonus item use and sleight of hand, and the ability to use magic items without the required class or race.' },
+      { name: 'Assassin', desc: 'Strike before enemies can react. Advantage and automatic crits against surprised targets; master of disguise and poison.' },
+      { name: 'Arcane Trickster', desc: 'Add wizard spells to your toolkit — primarily enchantment and illusion. Mage Hand becomes an invisible pickpocket.' },
+    ],
     narrative: 'Barovia is full of secrets, locked doors, hidden passages, and people who are lying. A rogue\'s Investigation, Stealth, and social skills are among the most useful in the campaign. Thieves\' Cant may connect them to Barovian criminal networks or the Vistani, who have their own codes. Their ability to operate in the shadows makes them well-suited to a land where open confrontation is rarely the right answer.',
   },
   Sorcerer: {
@@ -108,6 +162,11 @@ export const CLASS_CONFIG = {
       { name: 'Sorcerous Origin', desc: 'Your magic springs from an innate bloodline or cosmic event. Grants features at levels 1, 6, 14, and 18.' },
       { name: 'Spellcasting', desc: 'CHA-based spellcasting. 4 cantrips known. 2 first-level spell slots. 2 spells known.' },
     ],
+    subclassLevel: 1,
+    subclasses: [
+      { name: 'Draconic Bloodline', desc: 'Descended from or touched by a dragon. Bonus HP per level, natural armor (AC 13 + DEX without robes), and eventually draconic wings.' },
+      { name: 'Wild Magic', desc: 'Your magic is unstable and unpredictable. Wild Magic Surges can trigger random effects, but Tides of Chaos grants advantage on demand.' },
+    ],
     narrative: 'A sorcerer\'s magic is in their blood — it is not learned, it simply is. The Dark Powers that rule Barovia are drawn to innate magical talent. A sorcerer may feel the land responding to them in subtle, unsettling ways. Their wild or bloodline power pulses differently here, occasionally stronger than expected, occasionally sluggish, as if the mists are tasting it.',
   },
   Warlock: {
@@ -116,8 +175,14 @@ export const CLASS_CONFIG = {
     skillProfCount: 2, stProfs: ['wisdom', 'charisma'], expertiseCount: 0,
     combatFeature: { label: 'Pact Slots', value: '2' },
     features: [
-      { name: 'Otherworldly Patron', desc: 'A pact with a powerful entity grants expanded spell options and subclass features.' },
+      { name: 'Otherworldly Patron', desc: 'You have struck a bargain with a powerful entity. Their nature shapes your magic and will.' },
       { name: 'Pact Magic', desc: 'CHA-based spellcasting. 2 spell slots that recover on a short rest. 2 spells known.' },
+    ],
+    subclassLevel: 1,
+    subclasses: [
+      { name: 'The Archfey', desc: 'Your patron is a lord of the fey. Fey Presence can charm or frighten nearby creatures, and Misty Escape lets you vanish in a cloud of mist when hurt.' },
+      { name: 'The Fiend', desc: 'Pact with a devil or demon. Dark One\'s Blessing grants temporary HP on kills, and you gain powerful fire and death spells.' },
+      { name: 'The Great Old One', desc: 'Serve an unknowable cosmic entity. Awakened Mind grants telepathy with any creature; later abilities bend minds and pierce secrets.' },
     ],
     narrative: 'The pact is already made — it is not a future event, it is who this character is. Their patron (Fiend, Great Old One, or Archfey) is a constant presence, a voice or sensation at the edge of awareness. In Barovia, that patron may have sent them here deliberately, or may be unusually quiet — the Dark Powers do not share their domain easily. The warlock should feel the tension between their patron\'s agenda and Strahd\'s absolute control of this land. Eldritch Blast is their reliable tool; lean into the alien quality of their power.',
   },
@@ -129,6 +194,17 @@ export const CLASS_CONFIG = {
     features: [
       { name: 'Spellcasting', desc: 'INT-based spellcasting. 3 cantrips. 2 first-level spell slots. Spellbook holds 6 spells; prepare INT mod + wizard level per day.' },
       { name: 'Arcane Recovery', desc: 'Once per day on a short rest, recover spell slots totaling up to half your wizard level (round up).' },
+    ],
+    subclassLevel: 2,
+    subclasses: [
+      { name: 'School of Abjuration', desc: 'Specialize in protective magic. Arcane Ward absorbs damage for you; later you can extend that ward to nearby allies.' },
+      { name: 'School of Conjuration', desc: 'Master summoning and teleportation. Minor Conjuration creates small objects; higher-level conjurations improve dramatically in power.' },
+      { name: 'School of Divination', desc: 'See what others cannot. Portent lets you replace any d20 roll with a pre-rolled result — powerful and highly reliable.' },
+      { name: 'School of Enchantment', desc: 'Bend minds to your will. Hypnotic Gaze holds a creature entranced, and Instinctive Charm can redirect attacks away from you.' },
+      { name: 'School of Evocation', desc: 'Pure magical force. Sculpt Spells protects allies from your area effects; Empowered Evocation adds your INT mod to damage rolls.' },
+      { name: 'School of Illusion', desc: 'Craft convincing illusions. Improved Minor Illusion adds sound, and at higher levels your illusions can become partially real.' },
+      { name: 'School of Necromancy', desc: 'Command life and death. Grim Harvest regains HP when you kill with spells; Undead Thralls lets you raise more powerful undead minions.' },
+      { name: 'School of Transmutation', desc: 'Transform matter and creatures. Minor Alchemy changes materials temporarily; Transmuter\'s Stone grants an ongoing elemental benefit.' },
     ],
     narrative: 'Wizards are scholars — their power comes from study, not instinct. Their spellbook is their most prized possession and their Arcana skill makes them one of the few characters who might piece together what Barovia actually is. Ancient texts, strange inscriptions, and the arcane oddities of the land are their domain. They may recognize that the mists are not natural, that the magic here follows rules that predate conventional arcane theory.',
   },
