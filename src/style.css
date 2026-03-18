@@ -504,7 +504,7 @@ textarea::placeholder, input::placeholder { color: var(--text-inactive); }
 .msg-dm.ooc { font-style: italic; color: var(--text-aside); border-left: 2px solid var(--ooc-border); padding-left: .85rem; }
 .msg-dm p { margin: 0; }
 .msg-dm p + p { margin-top: .6rem; }
-.msg-player { align-self: flex-end; max-width: 840px; }
+.msg-player { align-self: flex-end; max-width: 840px; scroll-margin-top: var(--sp-lg); }
 .msg-player-inner { font-size: var(--fs-sm); line-height: 1.45; border-left: 2px solid var(--ic-border); padding-left: .85rem; color: var(--text-tertiary); }
 .msg-player-inner.ooc { border-left-color: var(--ooc-border); color: var(--text-aside); }
 .msg-player-inner p { margin: 0; }
