@@ -1,3 +1,5 @@
+import { LOCATIONS } from '../data/locations/index.js'
+
 function rollColorClass(total, dc) {
   if (total === 20) return 'roll-color-nat20'
   if (total === 1)  return 'roll-color-nat1'
@@ -76,12 +78,42 @@ export default function PlayMessages({ msgs, loading, bottomRef }) {
           </div>
         )
 
+        if (m.role === 'tarokka') {
+          const rows = [
+            { label: 'Tome of Strahd',       draw: m.reading.tome,        sub: LOCATIONS[m.reading.tome.location]?.name },
+            { label: 'Holy Symbol',           draw: m.reading.holySymbol,  sub: LOCATIONS[m.reading.holySymbol.location]?.name },
+            { label: 'Sunsword',              draw: m.reading.sunsword,    sub: LOCATIONS[m.reading.sunsword.location]?.name },
+            { label: 'Ally',                  draw: m.reading.ally,        sub: m.reading.ally.name },
+            { label: "Strahd's Lair",         draw: m.reading.lair },
+          ]
+          return (
+            <div key={m.id} className="event-card tarokka">
+              <div className="tarokka-header">
+                <div className="event-icon">✦</div>
+                <div className="event-label">Madam Eva's Prophecy</div>
+              </div>
+              <div className="tarokka-rows">
+                {rows.map(({ label, draw, sub }) => (
+                  <div key={label} className="tarokka-row">
+                    <div className="tarokka-artifact">{label}</div>
+                    <div>
+                      <div className="tarokka-card-name">{draw.card}</div>
+                      <div className="tarokka-hint">{draw.publicText}</div>
+                      {sub && <div className="tarokka-location">{sub}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
+
         if (m.role === 'levelup') return (
           <div key={m.id} className="event-card levelup">
             <div className="event-icon">↑</div>
             <div>
               <div className="event-label">Level {m.level}</div>
-              <div className="event-detail">HP · Proficiency · Spells updated</div>
+              {m.condition && <div className="event-detail">{m.condition}</div>}
             </div>
           </div>
         )

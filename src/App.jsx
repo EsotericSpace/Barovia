@@ -65,6 +65,8 @@ export default function App() {
             activeMonster: null,
             conditions: [],
             level: 1,
+            milestones: [],
+            currentLocation: null,
             deathSaves: { successes: 0, failures: 0 },
           }))
           setPhase('play')
@@ -75,9 +77,8 @@ export default function App() {
     return (
       <Play
         character={character}
-        onCharacterUpdate={c => {
-          const next = typeof c === 'function' ? c(character) : c
-          setCharacter(next)
+        onCharacterUpdate={updater => {
+          setCharacter(prev => typeof updater === 'function' ? updater(prev) : updater)
         }}
         onExit={() => setPhase('landing')}
         {...audioProps}

@@ -3,6 +3,8 @@ import { parseTags } from '../lib/parseTags.js'
 import { buildSystemPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
+import { LOCATIONS } from '../data/locations/index.js'
+import { drawReading } from '../data/tarokka.js'
 import { mod } from '../lib/dnd.js'
 import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
@@ -30,6 +32,22 @@ const SKILL_MAP = {
 }
 
 function rollD20() { return Math.floor(Math.random() * 20) + 1 }
+
+const MILESTONE_MAP = Object.fromEntries(
+  Object.values(LOCATIONS).flatMap(loc =>
+    (loc.levelTriggers ?? []).map(t => [t.milestone, t.level])
+  )
+)
+const MILESTONE_CONDITIONS = Object.fromEntries(
+  Object.values(LOCATIONS).flatMap(loc =>
+    (loc.levelTriggers ?? []).map(t => [t.milestone, t.condition])
+  )
+)
+const MILESTONE_LOCATIONS = Object.fromEntries(
+  Object.values(LOCATIONS).flatMap(loc =>
+    (loc.levelTriggers ?? []).map(t => [t.milestone, loc.id])
+  )
+)
 
 export default function Play({ character, onCharacterUpdate, onExit, volume, setVolume, muted, toggleMute }) {
   const saved = loadMsgs()
@@ -106,8 +124,24 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
         const slots = c.spellSlots.map((s, i) => i === tierIdx ? { ...s, used: s.used + 1 } : s)
         return { ...c, spellSlots: slots }
       })
-      if (t.type === 'levelup') {
-        const newLevel = (charRef.current.level ?? 1) + 1
+      if (t.type === 'tarokka') {
+        if (charRef.current.reading) return
+        const reading = drawReading()
+        onCharacterUpdate(c => ({ ...c, reading }))
+        buf.push({ role: 'tarokka', id: 'tarokka-' + Date.now(), reading })
+      }
+      if (t.type === 'location') {
+        onCharacterUpdate(c => ({ ...c, currentLocation: t.slug }))
+      }
+      if (t.type === 'milestone') {
+        const already = (charRef.current.milestones ?? []).includes(t.slug)
+        if (already) return
+        const expectedLoc = MILESTONE_LOCATIONS[t.slug]
+        const currentLoc = charRef.current.currentLocation
+        if (expectedLoc && currentLoc && currentLoc !== expectedLoc) return
+        onCharacterUpdate(c => ({ ...c, milestones: [...(c.milestones ?? []), t.slug] }))
+        const newLevel = MILESTONE_MAP[t.slug]
+        if (!newLevel || newLevel !== (charRef.current.level ?? 1) + 1) return
         onCharacterUpdate(c => {
           const hdAvg = HD_AVG[c.class] ?? 5
           const hpIncrease = hdAvg + mod(c.stats.constitution)
@@ -128,7 +162,7 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
             spellSlots: newSpellSlots,
           }
         })
-        buf.push({ role: 'levelup', id: 'lu-' + Date.now(), level: newLevel })
+        buf.push({ role: 'levelup', id: 'lu-' + Date.now(), level: newLevel, condition: MILESTONE_CONDITIONS[t.slug] })
       }
       if (t.type === 'shortrest') {
         const c = charRef.current

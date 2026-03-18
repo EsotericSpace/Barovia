@@ -43,8 +43,16 @@ export function parseTags(raw) {
       tags.push({ type: 'dead' })
       return ''
     })
-    .replace(/\[LEVELUP\]/g, () => {
-      tags.push({ type: 'levelup' })
+    .replace(/\[TAROKKA\]/g, () => {
+      tags.push({ type: 'tarokka' })
+      return ''
+    })
+    .replace(/\[LOCATION:([^\]]+)\]/g, (_, slug) => {
+      tags.push({ type: 'location', slug: slug.trim() })
+      return ''
+    })
+    .replace(/\[MILESTONE:([^\]]+)\]/g, (_, slug) => {
+      tags.push({ type: 'milestone', slug: slug.trim() })
       return ''
     })
     .trim()

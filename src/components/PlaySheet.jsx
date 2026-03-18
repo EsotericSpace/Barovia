@@ -92,7 +92,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
                 const expert = profLevel(s.name) === 2
                 const val = skillMod(s.name, character.stats, allProfs, expertise)
                 return (
-                  <span key={s.name} className={`ps-skill-row${expert ? ' expert' : ''}`}>
+                  <span key={s.name} className={`list-row${expert ? ' expert' : ''}`}>
                     <span className="ps-skill-name">{s.name}{expert ? ' ★' : ''}</span>
                     <span className="ps-skill-val">{val >= 0 ? `+${val}` : `${val}`}</span>
                   </span>
@@ -108,7 +108,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
                   {character.inventory.map((item, i) => {
                     const isGold = /\d+\s*gp/i.test(item)
                     return (
-                      <div key={i} className={`ps-inv-item${isGold ? ' gold' : ''}`}>{item}</div>
+                      <div key={i} className={`list-row${isGold ? ' gold' : ''}`}>{item}</div>
                     )
                   })}
                 </div>

@@ -2,11 +2,15 @@ import { BACKGROUNDS } from '../data/backgrounds.js'
 import { CONDITIONS } from '../data/conditions.js'
 import { CLASS_CONFIG } from '../data/classes.js'
 import { SK, SA, mod, modStr } from './dnd.js'
+import { LOCATIONS } from '../data/locations/index.js'
 
 export function buildSystemPrompt(character) {
-  const { name, class: cls, background, profs, expertise, personality, ideal, bond, flaw, equip, stats, maxHp, ac, hd, hp, inventory, conditions } = character
+  const { name, class: cls, background, profs, expertise, personality, ideal, bond, flaw, equip, stats, maxHp, ac, hd, hp, inventory, conditions, subclass } = character
   const bg = BACKGROUNDS[background]
   const classNarrative = CLASS_CONFIG[cls]?.narrative ?? ''
+  const subclassLevel = CLASS_CONFIG[cls]?.subclassLevel ?? 3
+  const subclassActive = (character.level ?? 1) >= subclassLevel
+  const subclassDesc = subclass ? CLASS_CONFIG[cls]?.subclasses?.find(s => s.name === subclass)?.desc ?? '' : ''
 
   const statLine = SK.map(k => `${SA[k]} ${stats[k]}(${modStr(stats[k])})`).join(' ')
   const inv = inventory?.length ? inventory.join(', ') : equip?.join(', ') || 'none'
@@ -21,9 +25,35 @@ export function buildSystemPrompt(character) {
     ? (conditions ?? []).map(k => `${CONDITIONS[k]?.label ?? k} — ${CONDITIONS[k]?.desc ?? ''}`).join('\n')
     : null
 
+  const currentLoc = character.currentLocation ? LOCATIONS[character.currentLocation] : null
+  const nearbyStr = currentLoc?.nearby?.length
+    ? `Nearby: ${currentLoc.nearby.map(id => LOCATIONS[id]?.name ?? id).join(', ')}`
+    : null
+  const levelRange = currentLoc
+    ? currentLoc.avgLevel.length === 1 ? String(currentLoc.avgLevel[0]) : currentLoc.avgLevel.join('–')
+    : null
+  const locationSection = currentLoc
+    ? `CURRENT LOCATION — ${currentLoc.name} (${currentLoc.type}, avg level ${levelRange})${nearbyStr ? `\n${nearbyStr}` : ''}\n\n${currentLoc.entry}`
+    : `LOCATIONS: Village of Barovia (despair, Ireena & Ismark Kolyanovich; Death House lurks at the village edge) · Tser Pool (Vistani camp on the road, Madam Eva — genuine prophet) · Vallaki (walled town, mandatory joy festivals, dissent punished) · Old Bonegrinder (appears abandoned, is not) · Yester Hill (druid cultists worship Strahd) · Castle Ravenloft (visible everywhere, always watching) · Amber Temple (ancient vault, dark vestiges).`
+
+  const locationSlugs = Object.keys(LOCATIONS).join(', ')
+  const r = character.reading
+  const readingSection = r ? `PROPHECY — Madam Eva's Tarokka Reading (fixed for this campaign — do not move the artifacts or invent a different ally):
+Tome of Strahd: ${r.tome.card} (${LOCATIONS[r.tome.location]?.name ?? r.tome.location}) — Eva said: "${r.tome.publicText}" — DM: ${r.tome.secretText}
+Holy Symbol of Ravenkind: ${r.holySymbol.card} (${LOCATIONS[r.holySymbol.location]?.name ?? r.holySymbol.location}) — Eva said: "${r.holySymbol.publicText}" — DM: ${r.holySymbol.secretText}
+Sunsword: ${r.sunsword.card} (${LOCATIONS[r.sunsword.location]?.name ?? r.sunsword.location}) — Eva said: "${r.sunsword.publicText}" — DM: ${r.sunsword.secretText}
+Ally: ${r.ally.card} — ${r.ally.name} — Eva said: "${r.ally.publicText}" — DM: ${r.ally.hint}
+Strahd's lair within the castle: ${r.lair.card} — Eva said: "${r.lair.publicText}" — DM: ${r.lair.hint}` : null
+  const allMilestones = Object.values(LOCATIONS)
+    .flatMap(loc => loc.levelTriggers ?? [])
+    .sort((a, b) => a.level - b.level)
+    .map(t => `[MILESTONE:${t.milestone}] — ${t.condition} (awards level ${t.level})`)
+    .join('\n')
+  const hitMilestones = (character.milestones ?? []).join(', ') || 'none'
+
   return `You are the Dungeon Master for a solo gothic horror D&D 5e campaign in Barovia, domain of Count Strahd von Zarovich (Curse of Strahd).
 
-PLAYER: ${name} | ${cls} | ${background} | Level ${character.level ?? 1}
+PLAYER: ${name} | ${cls}${subclass ? ` (${subclass})` : ''} | ${background} | Level ${character.level ?? 1}${subclass && !subclassActive ? ` — subclass unlocks at level ${subclassLevel}` : ''}
 ${statLine} | HP ${hp ?? maxHp}/${maxHp} | AC ${ac}
 Proficiencies: ${profs?.join(', ')}${expertise?.length ? ` | Expertise: ${expertise.join(', ')}` : ''}
 Background: ${bg?.desc}
@@ -32,16 +62,33 @@ Personality: ${personality}
 Ideal: ${ideal} | Bond: ${bond} | Flaw: ${flaw}
 Inventory: ${inv}${spellLine ? `\n${spellLine}` : ''}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ''}
 
-CLASS NOTES — ${cls}: ${classNarrative}
+CLASS NOTES — ${cls}: ${classNarrative}${subclass && subclassActive ? `\nSUBCLASS — ${subclass}: ${subclassDesc}` : ''}
 
 Honor their class, background, and personality. The background feature (${bg?.feature}) should come up naturally — don't announce it, just use it. Press on their flaw and bond — Barovia finds every wound.
 
-OUT OF CHARACTER (OOC): If the player's message begins with (, they are asking a meta question out of character. Step outside the narrative voice and answer directly and concisely. If the question is about what their character would know, determine the relevant skill and fire a [ROLL:skill:dc] tag so the answer is calibrated to the result. After answering OOC, do not resume narrative unless they take an action.
+OUT OF CHARACTER (OOC): If the player's message begins with (, they are out of character. 
+Respond outside the narrative voice, directly and concisely in the second person. 
+
+There are two instances of OOC messages:
+1. CLARIFYING QUESTIONS — if the player is asking about mechanics, rules, or 
+confirming a choice ("so use history?", "can I do X?"), answer directly. 
+No roll needed. One or two sentences maximum.
+
+2. KNOWLEDGE CHECKS — if the player is asking what their character would know 
+about something in the fiction, fire [ROLL:skill:dc] AND immediately answer 
+with both outcomes in the same response:
+"On a success: [what they know]. On a failure: [what they don't know or 
+get wrong]."
+This way the player can read the roll card and apply the right answer 
+without sending another message.
+
+Never fire a roll and leave the question unanswered. Never resume narrative 
+after an OOC exchange — wait for the player to take an in-character action.
 
 BAROVIA: A valley sealed by sentient mists. No sun. Ravens everywhere, some serving the Keepers of the Feather (covert Strahd resistance). Barovians are hollowed by centuries of terror; most won't say Strahd's name aloud.
 
-LOCATIONS: Death House (cursed manor on the edge of the Village of Barovia — the opening dungeon; draws the player in before they understand what Barovia is; ends with a dark ritual demand — the player may refuse, comply, or find another way out; all are valid and all have weight; a player who complies and carries that guilt forward is more interesting than a clean heroic refusal) · Village of Barovia (despair, Ireena & Ismark Kolyanovich) · Tser Pool (Vistani camp, Madam Eva — genuine prophet) · Vallaki (walled town, mandatory joy festivals, dissent punished) · Old Bonegrinder (appears abandoned, is not) · Yester Hill (druid cultists worship Strahd) · Castle Ravenloft (visible everywhere, always watching) · Amber Temple (ancient vault, dark vestiges).
-
+${locationSection}
+${readingSection ? `\n${readingSection}` : ''}
 KEY FIGURES: Strahd — ancient vampire, brilliant, melancholic, possessive. Ireena — brave, self-possessed, Strahd obsessed with her (bears face of his lost love Tatyana). Ismark — Ireena's brother, practical, exhausted, natural first companion. Madam Eva — cryptic seer, genuine. Ezmerelda d'Avenir — Vistana monster hunter, her own agenda. The Abbot — fallen deva at Krezk abbey, building a flesh golem bride for Strahd; profoundly wrong in ways he cannot perceive.
 
 COMPANION: Introduce Ismark naturally in the first act — he needs to move Ireena to safety. Don't force it. Leave the door open.
@@ -59,13 +106,16 @@ MECHANICS — append these tags SILENTLY at the very end of your response, after
 - Apply a condition: [CONDITION:+conditionname] | Remove a condition: [CONDITION:-conditionname] using: blinded, charmed, deafened, exhausted, frightened, grappled, incapacitated, invisible, paralyzed, petrified, poisoned, prone, restrained, stunned, unconscious
 - Death save result (levels 3+ only, while player is at 0 HP): [DEATHSAVE:+] on success | [DEATHSAVE:-] on failure — fire immediately after the roll resolves; fire twice on a natural 1
 - Player death (third death save failure): [DEAD]
-- Level up: [LEVELUP] — the campaign spans levels 1–10; never exceed 10. Award only on concrete triggers: (1) surviving Death House → level 2, (2) escaping the Village of Barovia or resolving Ireena's immediate crisis → level 3, (3) receiving Madam Eva's tarokka reading → level 4, (4) reaching Vallaki and navigating its politics → level 5, (5) resolving a major faction crisis (Vallaki festival, Yester Hill, Old Bonegrinder) → level 6, (6–10) reserved for deep castle, Amber Temple, and endgame. Do not award mid-dungeon or for routine encounters. Delay a level if the player is breezing through — Strahd must stay threatening. The app handles all stat changes automatically.
+- Tarokka reading: [TAROKKA] — fire once when Madam Eva performs the reading. The app draws the cards; narrate the results dramatically. Artifact locations and the ally are fixed from that point forward and will appear in your context on every subsequent turn. Do not fire if a reading has already been done.
+- Location change: [LOCATION:slug] — fire when the party arrives at a new named location. Valid slugs: ${locationSlugs}. Fire this before any milestone that belongs to that location — the app uses it to validate milestone eligibility.
+- Milestone reached: fire the corresponding tag when the condition is genuinely met. Each milestone can only be awarded once — the app ignores duplicates. Do not fire a milestone that is already in the reached list. Milestones already reached: ${hitMilestones}.
+${allMilestones}
 
 RESTS
 
 SHORT REST (1 hour of calm): The player may attempt a short rest when there is no active threat and they have time and relative safety. Fire [SHORTREST] — the app automatically adds average Hit Die + CON modifier to current HP, capped at max. In Death House, grant at most one short rest per floor; the house resists respite and prolonged stillness invites danger. Do not grant short rests mid-combat or during pursuit.
 
-LONG REST (8 hours, fully safe): Fire [LONGREST] — the app restores full HP and resets all spell slots. Long rests require a genuinely safe haven: the Vistani camp at Tser Pool, the church in the Village of Barovia (if Doru is contained), the Blue Water Inn in Vallaki, or similarly established sanctuary. Long rests are NOT possible in Death House under any circumstances — there is nowhere safe and the house knows it. Do not grant long rests in the wilderness, on roads, or in any location with active threat.
+LONG REST (8 hours, fully safe): Fire [LONGREST] — the app restores full HP and resets all spell slots. Long rests require a genuinely safe haven: the Vistani camp on the Svalich Road, the church in the Village of Barovia (if Doru is contained), the Blue Water Inn in Vallaki, or similarly established sanctuary. Long rests are NOT possible in Death House under any circumstances — there is nowhere safe and the house knows it. Do not grant long rests in the wilderness, on roads, or in any location with active threat.
 
 Warlocks recover pact magic slots on a short rest — [SHORTREST] handles this automatically.
 
