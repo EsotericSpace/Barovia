@@ -12,7 +12,7 @@ export default function SettingsButton({ volume, setVolume, muted, toggleMute, c
         onClick={() => setOpen(true)}
         title="Settings"
       >
-        Settings
+        <span className="material-symbols-outlined">settings</span>
       </button>
 
       {open && (

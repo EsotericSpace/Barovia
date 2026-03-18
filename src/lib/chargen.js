@@ -1,6 +1,6 @@
 import { CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
-import { SPELL_ASSIGNMENTS } from '../data/spells.js'
+import { SPELL_ASSIGNMENTS, applySubclassSpells } from '../data/spells.js'
 import { SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { SK, SKILLS, mod } from './dnd.js'
 
@@ -28,8 +28,12 @@ export function generateSheet(cls) {
   const expertise = cfg.expertiseCount > 0 ? pickN(classProfs, cfg.expertiseCount) : []
   const allProfs = [...new Set([...bg.profs, ...classProfs])]
 
+  const subclass = cfg.subclasses[0].name
   const spellData = SPELL_ASSIGNMENTS[cls]
-  const spells = spellData?.[bgKey] ?? null
+  const baseSpells = spellData?.[bgKey] ?? null
+  const finalSpells = baseSpells
+    ? applySubclassSpells(cls, subclass, baseSpells.cantrips, baseSpells.spells)
+    : null
   const slotTiers = SLOT_TABLE[cls]
   const spellSlots = slotTiers ? slotTiers[0].map(s => ({ ...s, used: 0 })) : null
   const shortRestCaster = SHORT_REST_CASTERS.has(cls)
@@ -43,9 +47,10 @@ export function generateSheet(cls) {
     maxHp: cfg.hd + mod(stats.constitution),
     ac: 10 + mod(stats.dexterity),
     hd: cfg.hd,
-    cantrips: spells?.cantrips ?? [],
-    spellsKnown: spells?.spells ?? [],
+    cantrips: finalSpells?.cantrips ?? [],
+    spellsKnown: finalSpells?.spells ?? [],
     spellSlots,
     shortRestCaster,
+    subclass,
   }
 }

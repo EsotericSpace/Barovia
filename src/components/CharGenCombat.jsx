@@ -1,9 +1,33 @@
-import { SK, SA, mod, modStr, SKILLS, PROF_BONUS, skillMod } from '../lib/dnd.js'
-import { SL } from './CharGenShared.jsx'
+import { SK, SA, mod, modStr, PROF_BONUS } from '../lib/dnd.js'
+import { SL, LK } from './CharGenShared.jsx'
+import { CLASS_WEAPONS } from '../data/weapons.js'
 
-export default function CharGenCombat({ sheet, cfg, allProfs, profLevel }) {
+export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls, doReroll, rerolls }) {
   return (
     <div className="cg-col">
+
+      <div>
+        <div className="cg-scores-header">
+          <SL>Ability Scores</SL>
+          <button className="cg-btn cg-reroll rbtn" onClick={doReroll} disabled={rerolls <= 0}>
+            Reroll ({rerolls} left)
+          </button>
+        </div>
+        <div className="stat-grid">
+          {SK.map(k => {
+            const isLocked = !!locked.stats?.[k]
+            const isPri = cfg.pri.includes(k)
+            return (
+              <div key={k} className={`stat-cell${isPri ? ' primary' : ''}`}>
+                <LK on={isLocked} toggle={() => toggleStatLock(k)} />
+                <div className="stat-key">{SA[k]}</div>
+                <div className="stat-val">{sheet.stats[k]}</div>
+                <div className="stat-mod">{modStr(sheet.stats[k])}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       <div>
         <SL>Saving Throws</SL>
@@ -41,30 +65,11 @@ export default function CharGenCombat({ sheet, cfg, allProfs, profLevel }) {
       </div>
 
       <div>
-        <SL>Skills</SL>
-        <div className="cg-col" style={{ gap: 'var(--sp-xs)' }}>
-          {SKILLS.filter(s => profLevel(s.name) > 0).map(s => {
-            const expert = profLevel(s.name) === 2
-            const val = skillMod(s.name, sheet.stats, allProfs, sheet.expertise)
-            return (
-              <span key={s.name} className={`skill-row${expert ? ' expert' : ''}`}>
-                <span className="skill-name">{s.name}{expert ? ' ★' : ''}</span>
-                <span className="skill-mod">{val >= 0 ? `+${val}` : `${val}`}</span>
-              </span>
-            )
-          })}
-        </div>
-      </div>
-
-      <div>
-        <SL>Starting Inventory</SL>
+        <SL>Starting Weapons</SL>
         <div className="inv-list">
-          {sheet.equip.map((item, i) => {
-            const isGold = /\d+\s*gp/i.test(item)
-            return (
-              <div key={i} className={`inv-item${isGold ? ' gold' : ''}`}>{item}</div>
-            )
-          })}
+          {(CLASS_WEAPONS[cls]?.starting ?? []).map((item, i) => (
+            <div key={i} className="list-row">{item}</div>
+          ))}
         </div>
       </div>
 

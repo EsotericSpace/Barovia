@@ -1,34 +1,17 @@
-import { SK, SA, modStr } from '../lib/dnd.js'
-import { SL, LK } from './CharGenShared.jsx'
+import { SKILLS, skillMod } from '../lib/dnd.js'
+import { SL } from './CharGenShared.jsx'
 
-export default function CharGenStats({ sheet, character, cfg, locked, toggleStatLock }) {
+export default function CharGenStats({ sheet, character, cfg, prevSubclass, nextSubclass }) {
+  const proficientSkills = SKILLS.filter(s => sheet.profs.includes(s.name))
+
   return (
     <div className="cg-col">
 
       <div>
-        <SL>Ability Scores</SL>
-        <div className="stat-grid">
-          {SK.map(k => {
-            const isLocked = !!locked.stats?.[k]
-            const isPri = cfg.pri.includes(k)
-            return (
-              <div key={k} className={`stat-cell${isPri ? ' primary' : ''}`}>
-                <LK on={isLocked} toggle={() => toggleStatLock(k)} />
-                <div className="stat-key">{SA[k]}</div>
-                <div className="stat-val">{sheet.stats[k]}</div>
-                <div className="stat-mod">{modStr(sheet.stats[k])}</div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div>
         <SL>Class Features · {character.class} 1</SL>
         <div className="feature-list">
-          {cfg.features.map((f, i) => (
+          {cfg.features.map(f => (
             <div key={f.name}>
-              {i > 0 && <div className="feature-divider" />}
               <div className="feature-name">{f.name}</div>
               <div className="feature-desc">{f.desc}</div>
             </div>
@@ -36,25 +19,54 @@ export default function CharGenStats({ sheet, character, cfg, locked, toggleStat
         </div>
       </div>
 
+      <div>
+        <div className="feature-name">
+          Subclass
+          {cfg.subclassLevel === 1 ? ' · Active now' : ` · Takes effect at level ${cfg.subclassLevel}`}
+        </div>
+        {(() => {
+          const sc = cfg.subclasses.find(s => s.name === sheet.subclass) ?? cfg.subclasses[0]
+          return (
+            <div className="bg-block">
+              <div className="bg-nav">
+                <button className="bg-arrow" onClick={prevSubclass}>‹</button>
+                <span className="bg-name">{sc.name}</span>
+                <button className="bg-arrow" onClick={nextSubclass}>›</button>
+              </div>
+              <div className="bg-desc">{sc.desc}</div>
+            </div>
+          )
+        })()}
+      </div>
+
+      <div>
+        <div className="feature-name">Skills</div>
+        <div className="skill-inline">
+          {proficientSkills.map((s, i) => {
+            const expert = sheet.expertise.includes(s.name)
+            const val = skillMod(s.name, sheet.stats, sheet.profs, sheet.expertise)
+            const valStr = val >= 0 ? `+${val}` : `${val}`
+            return (
+              <span key={s.name} className={`skill-inline-item${expert ? ' expert' : ''}`}>
+                {s.name} ({valStr}){expert ? ' ★' : ''}{i < proficientSkills.length - 1 ? ',' : ''}
+              </span>
+            )
+          })}
+        </div>
+      </div>
+
       {sheet.cantrips?.length > 0 && (
         <div>
-          <SL>Spells</SL>
+          <div className="feature-name">Spells</div>
           <div className="spell-list">
-            {sheet.spellSlots?.length > 0 && (
-              <div className="spell-slots-info">
-                {sheet.spellSlots.map(s => `${s.total} × L${s.level}`).join(', ')} · {sheet.shortRestCaster ? 'short rest' : 'long rest'}
-              </div>
-            )}
             {sheet.cantrips.map(s => (
-              <div key={s} className="spell-row">
-                <span className="spell-dot cantrip">◆</span>
+              <div key={s} className="list-row">
                 <span className="spell-name">{s}</span>
                 <span className="spell-tier">cantrip</span>
               </div>
             ))}
             {sheet.spellsKnown.map(s => (
-              <div key={s} className="spell-row">
-                <span className="spell-dot known">◆</span>
+              <div key={s} className="list-row">
                 <span className="spell-name">{s}</span>
                 <span className="spell-tier">1st</span>
               </div>
