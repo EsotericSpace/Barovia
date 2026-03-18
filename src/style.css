@@ -408,7 +408,7 @@ textarea::placeholder, input::placeholder { color: var(--text-inactive); }
 .topbar-exit { position: fixed; top: var(--sp-lg); left: var(--sp-lg); z-index: 500; background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 0; display: inline-flex; align-items: center; }
 .topbar-exit .material-symbols-outlined { font-size: 2em; line-height: 1; font-variation-settings: 'wght' 200; }
 .topbar-exit:hover { color: var(--text-secondary); }
-.play-header { flex-shrink: 0; display: flex; align-items: center; justify-content: center; height: calc(var(--sp-lg) * 2 + 2rem); padding: 0 calc(var(--sp-lg) * 2 + 2rem); border-bottom: 1px solid var(--border); }
+.play-header { flex-shrink: 0; text-align: center; padding: var(--sp-lg) calc(var(--sp-lg) * 2 + 2rem); border-bottom: 1px solid var(--border); }
 .play-header-title { font-family: var(--font-display); font-size: var(--fs-sm); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--text-tertiary); line-height: 1; }
 .topbar-center { display: flex; align-items: center; gap: var(--sp-lg); }
 .topbar-right  { display: flex; align-items: center; gap: var(--sp-sm); }
@@ -554,7 +554,7 @@ textarea::placeholder, input::placeholder { color: var(--text-inactive); }
 
 /* Input */
 .play-input-wrap { display: flex; align-items: center; gap: var(--sp-sm); padding: .8rem 1.1rem; flex-shrink: 0; border-top: 1px solid var(--border); }
-.play-textarea   { flex: 1; background: transparent; font-size: var(--fs-base); line-height: 1.9; resize: none; outline: none; padding: .25rem 0; min-height: 1.9rem; overflow: hidden; color: var(--text); }
+.play-textarea   { flex: 1; background: transparent; font-size: max(1rem, 16px); line-height: 1.9; resize: none; outline: none; padding: .25rem 0; min-height: 1.9rem; overflow: hidden; color: var(--text); }
 .play-textarea.ooc { color: var(--text-aside); }
 .play-send-btn { background: none; border: none; color: var(--text-inactive); cursor: default; padding: 0; display: inline-flex; align-items: center; transition: color var(--dur-base); flex-shrink: 0; }
 .play-send-btn .material-symbols-outlined { font-size: 2em; line-height: 1; font-variation-settings: 'wght' 200; }
