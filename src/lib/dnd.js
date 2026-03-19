@@ -3,6 +3,7 @@ export const SA = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', inte
 
 export function mod(s) { return Math.floor((s - 10) / 2) }
 export function modStr(s) { const m = mod(s); return m >= 0 ? `+${m}` : `${m}` }
+export function spellLevelStr(n) { const s = ['th','st','nd','rd']; return n + (s[(n % 100 - 20) % 10] || s[n % 100] || s[0]) }
 
 export const PROF_BONUS = 2
 

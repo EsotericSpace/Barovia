@@ -1,4 +1,11 @@
-import { forwardRef } from 'react'
+import { forwardRef, useRef } from 'react'
+
+function renderInline(text) {
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+}
 import { LOCATIONS } from '../data/locations/index.js'
 
 function rollColorClass(total, dc) {
@@ -16,16 +23,21 @@ const Paragraphs = forwardRef(function Paragraphs({ content, className }, ref) {
   return (
     <div ref={ref} className={className}>
       {content.split(/\n\n+/).filter(Boolean).map((p, i) => (
-        <p key={i}>{p.trim()}</p>
+        <p key={i} dangerouslySetInnerHTML={{ __html: renderInline(p.trim()) }} />
       ))}
     </div>
   )
 })
 
-export default function PlayMessages({ msgs, loading, latestRef }) {
+export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt }) {
+  const msgsRef = useRef(null)
   const lastUserIdx = msgs.reduce((acc, m, i) => m.role === 'user' ? i : acc, -1)
   return (
-    <div className="play-msgs">
+    <div className="play-msgs-wrap">
+    <button className="scroll-btn scroll-btn-top" onClick={() => msgsRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}>
+      <span className="material-symbols-outlined">keyboard_arrow_up</span>
+    </button>
+    <div className="play-msgs" ref={msgsRef}>
       {msgs.map((m, idx) => {
         const isLastUser = idx === lastUserIdx
         if (m.role === 'assistant') return (
@@ -45,6 +57,18 @@ export default function PlayMessages({ msgs, loading, latestRef }) {
           </div>
         )
 
+        if (m.role === 'rollprompt') return (
+          <button key={m.id} className="rollcard rollcard-prompt" onClick={() => onRollPrompt(m)}>
+            <div className="roll-prompt-icon">
+              <span className="material-symbols-outlined">casino</span>
+            </div>
+            <div>
+              <div className="roll-skill-dc">{m.skill}</div>
+              <div className="roll-prompt-sub">{m.ability}{m.modifier >= 0 ? ` +${m.modifier}` : ` ${m.modifier}`} · click to roll</div>
+            </div>
+          </button>
+        )
+
         if (m.role === 'roll') {
           const colorClass = rollColorClass(m.total, m.dc)
           const nat = m.d20 === 20 || m.d20 === 1
@@ -55,10 +79,12 @@ export default function PlayMessages({ msgs, loading, latestRef }) {
                 {nat && <div className={`roll-nat ${colorClass}`}>{m.d20 === 20 ? 'NAT 20' : 'NAT 1'}</div>}
               </div>
               <div>
-                <div className="roll-skill-dc">{m.skill} · DC {m.dc}</div>
-                <div className={`roll-result ${m.success ? 'roll-color-success' : 'roll-color-fail'}`}>
-                  {m.success ? 'Success' : 'Failure'}
-                </div>
+                <div className="roll-skill-dc">{m.skill}{m.dc != null ? ` · DC ${m.dc}` : ''}</div>
+                {m.success != null && (
+                  <div className={`roll-result ${m.success ? 'roll-color-success' : 'roll-color-fail'}`}>
+                    {m.success ? 'Success' : 'Failure'}
+                  </div>
+                )}
               </div>
               <div className="tipwrap roll-tip">
                 ⓘ<span className="tip">d20({m.d20}) {m.modifier >= 0 ? '+' : ''}{m.modifier} [{m.ability}] = {m.total} vs DC {m.dc}</span>
@@ -131,6 +157,10 @@ export default function PlayMessages({ msgs, loading, latestRef }) {
           ))}
         </div>
       )}
+    </div>
+    <button className="scroll-btn scroll-btn-bottom" onClick={() => msgsRef.current?.scrollTo({ top: msgsRef.current.scrollHeight, behavior: 'smooth' })}>
+      <span className="material-symbols-outlined">keyboard_arrow_down</span>
+    </button>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { SKILLS, skillMod } from '../lib/dnd.js'
+import { SKILLS, skillMod, spellLevelStr } from '../lib/dnd.js'
 import { SL } from './CharGenShared.jsx'
 
 export default function CharGenStats({ sheet, character, cfg, prevSubclass, nextSubclass }) {
@@ -29,9 +29,9 @@ export default function CharGenStats({ sheet, character, cfg, prevSubclass, next
           return (
             <div className="bg-block">
               <div className="bg-nav">
-                <button className="bg-arrow" onClick={prevSubclass}>‹</button>
+                <button className="bg-arrow" onClick={prevSubclass}><span className="material-symbols-outlined">chevron_left</span></button>
                 <span className="bg-name">{sc.name}</span>
-                <button className="bg-arrow" onClick={nextSubclass}>›</button>
+                <button className="bg-arrow" onClick={nextSubclass}><span className="material-symbols-outlined">chevron_right</span></button>
               </div>
               <div className="bg-desc">{sc.desc}</div>
             </div>
@@ -65,12 +65,16 @@ export default function CharGenStats({ sheet, character, cfg, prevSubclass, next
                 <span className="spell-tier">cantrip</span>
               </div>
             ))}
-            {sheet.spellsKnown.map(s => (
-              <div key={s} className="list-row">
-                <span className="spell-name">{s}</span>
-                <span className="spell-tier">1st</span>
-              </div>
-            ))}
+            {sheet.spellsKnown.map(s => {
+              const name = typeof s === 'string' ? s : s.name
+              const level = typeof s === 'string' ? 1 : s.level
+              return (
+                <div key={name} className="list-row">
+                  <span className="spell-name">{name}</span>
+                  <span className="spell-tier">{spellLevelStr(level)}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { parseTags } from '../lib/parseTags.js'
-import { buildSystemPrompt } from '../lib/systemPrompt.js'
+import { buildSystemPrompt, buildTestPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { LOCATIONS } from '../data/locations/index.js'
 import { drawReading } from '../data/tarokka.js'
-import { mod } from '../lib/dnd.js'
+import { mod, SA } from '../lib/dnd.js'
 import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
@@ -116,9 +116,12 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
         if (wasAtZero && t.val > 0) next.deathSaves = { successes: 0, failures: 0 }
         return next
       })
+      if (t.type === 'spelllearn') onCharacterUpdate(c => ({
+        ...c, spellsKnown: [...(c.spellsKnown ?? []), { name: t.name, level: t.level }],
+      }))
       if (t.type === 'spellslot') onCharacterUpdate(c => {
         if (!Array.isArray(c.spellSlots)) return c
-        const tierIdx = c.spellSlots.findIndex(s => s.used < s.total)
+        const tierIdx = c.spellSlots.findIndex(s => s.level === t.level && s.used < s.total)
         if (tierIdx === -1) return c
         const slots = c.spellSlots.map((s, i) => i === tierIdx ? { ...s, used: s.used + 1 } : s)
         return { ...c, spellSlots: slots }
@@ -203,6 +206,17 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
             : (c.conditions ?? []).filter(k => k !== key),
         }))
       }
+      if (t.type === 'rollprompt') {
+        const ability = SKILL_MAP[t.skill] || 'strength'
+        const modifier = mod(charRef.current.stats[ability] || 10)
+        buf.push({
+          role: 'rollprompt', id: 'rp-' + Date.now() + Math.random(),
+          skill: t.skill.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          rawSkill: t.skill,
+          ability: SA[ability] || ability.toUpperCase(),
+          modifier,
+        })
+      }
       if (t.type === 'roll') {
         const ability = SKILL_MAP[t.skill] || 'strength'
         const modifier = mod(charRef.current.stats[ability] || 10)
@@ -219,8 +233,136 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
     })
   }
 
+  async function handleRollPrompt(msg) {
+    if (loading) return
+    const d20 = rollD20()
+    const total = d20 + msg.modifier
+    const rollMsg = {
+      role: 'roll', id: 'roll-' + Date.now(),
+      d20, modifier: msg.modifier, total, dc: null, skill: msg.skill,
+      ability: msg.ability, success: null,
+    }
+    setMsgs(p => p.map(m => m.id === msg.id ? rollMsg : m))
+    setLoading(true)
+    sysRef.current = buildSystemPrompt(charRef.current)
+    const resultText = `[Player roll: ${msg.skill} — d20(${d20})${msg.modifier >= 0 ? '+' : ''}${msg.modifier} = ${total}]`
+    const newHist = [...histRef.current, { role: 'user', content: resultText }]
+    try {
+      const { text, tags } = await callDM(newHist)
+      histRef.current = [...newHist, { role: 'assistant', content: text }]
+      const buf = [{ role: 'assistant', content: text, id: Date.now() + 'a' }]
+      applyTags(tags, buf)
+      setMsgs(p => [...p, ...buf])
+    } catch {
+      setMsgs(p => [...p, { role: 'assistant', content: '(Connection failed.)', id: 'e' + Date.now() }])
+    }
+    setLoading(false)
+  }
+
+  async function handleTestCommand(raw) {
+    const args = raw.slice('/test'.length).trim()
+    const parts = args.split(/\s+/)
+    const cmd = parts[0]?.toLowerCase()
+
+    if (cmd === 'rollprompt') {
+      const skillRaw = parts.slice(1).join('_').toLowerCase() || 'perception'
+      const ability = SKILL_MAP[skillRaw] || 'wisdom'
+      setMsgs(p => [...p, {
+        role: 'rollprompt', id: 'rp-test-' + Date.now(),
+        skill: skillRaw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        rawSkill: skillRaw, ability: SA[ability] || ability.toUpperCase(),
+        modifier: mod(charRef.current.stats[ability] || 10),
+      }])
+      return
+    }
+
+    if (cmd === 'roll') {
+      const skillRaw = parts[1]?.toLowerCase() || 'perception'
+      const total = parseInt(parts[2]) || 14
+      const dc = parts[3] ? parseInt(parts[3]) : null
+      const ability = SKILL_MAP[skillRaw] || 'wisdom'
+      const modifier = mod(charRef.current.stats[ability] || 10)
+      const d20 = Math.max(1, Math.min(20, total - modifier))
+      setMsgs(p => [...p, {
+        role: 'roll', id: 'roll-test-' + Date.now(),
+        d20, modifier, total, dc,
+        skill: skillRaw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        ability: SA[ability] || ability.toUpperCase(),
+        success: dc != null ? total >= dc : null,
+      }])
+      return
+    }
+
+    if (cmd === 'rest') {
+      const short = parts[1] !== 'long'
+      const hpGain = short ? Math.max(1, Math.floor((charRef.current.maxHp - charRef.current.hp) / 2)) : 0
+      setMsgs(p => [...p, { role: 'rest', id: 'rest-test-' + Date.now(), short, hpGain }])
+      return
+    }
+
+    if (cmd === 'levelup') {
+      const level = parseInt(parts[1]) || (charRef.current.level ?? 1) + 1
+      onCharacterUpdate(c => {
+        const hdAvg = HD_AVG[c.class] ?? 5
+        const hpIncrease = hdAvg + mod(c.stats.constitution)
+        const newMaxHp = c.maxHp + hpIncrease
+        const tierDefs = SLOT_TABLE[c.class]?.[level - 1]
+        const newSpellSlots = tierDefs
+          ? tierDefs.map(def => {
+              const existing = Array.isArray(c.spellSlots) ? c.spellSlots.find(s => s.level === def.level) : null
+              return { ...def, used: existing?.used ?? 0 }
+            })
+          : c.spellSlots
+        return {
+          ...c,
+          level,
+          maxHp: newMaxHp,
+          hp: Math.min(c.hp + hpIncrease, newMaxHp),
+          profBonus: profBonus(level),
+          spellSlots: newSpellSlots,
+        }
+      })
+      setMsgs(p => [...p, { role: 'levelup', id: 'lu-test-' + Date.now(), level }])
+      return
+    }
+
+    if (cmd === 'hp') {
+      const val = parseInt(parts[1])
+      if (!isNaN(val)) onCharacterUpdate(c => ({ ...c, hp: Math.max(0, Math.min(c.maxHp, val)) }))
+      return
+    }
+
+    // Free-text: send to Claude with test system prompt, isolated from campaign history
+    setLoading(true)
+    try {
+      const r = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: buildTestPrompt(charRef.current),
+          messages: [{ role: 'user', content: args }],
+        }),
+      })
+      const d = await r.json()
+      if (d.error) throw new Error(d.error)
+      const { text, tags } = parseTags(d.content)
+      const buf = [{ role: 'assistant', content: text || '*(no narrative)*', id: 'test-' + Date.now() }]
+      applyTags(tags, buf)
+      setMsgs(p => [...p, ...buf])
+    } catch {
+      setMsgs(p => [...p, { role: 'assistant', content: '*(Test failed — check console)*', id: 'e' + Date.now() }])
+    }
+    setLoading(false)
+  }
+
   async function send() {
     if (!input.trim() || loading) return
+    if (input.trim().startsWith('/test')) {
+      const cmd = input.trim()
+      setInput('')
+      await handleTestCommand(cmd)
+      return
+    }
     const lastMsg = msgs[msgs.length - 1]
     const rollCtx = lastMsg?.role === 'roll'
       ? `[Roll result: ${lastMsg.skill} DC${lastMsg.dc} — rolled ${lastMsg.total} (d20:${lastMsg.d20}${lastMsg.modifier >= 0 ? '+' : ''}${lastMsg.modifier}) — ${lastMsg.success ? 'SUCCESS' : 'FAILURE'}] `
@@ -259,15 +401,15 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
   return (
     <div className="play-page">
 
-      <button className="topbar-exit" onClick={sheetOpen ? () => setSheetOpen(false) : onExit}>
-        <span className="material-symbols-outlined">{sheetOpen ? 'close' : 'logout'}</span>
+      <button className="topbar-exit" onClick={sheetOpen && window.matchMedia('(max-width: 640px)').matches ? () => setSheetOpen(false) : onExit}>
+        <span className="material-symbols-outlined">{sheetOpen && window.matchMedia('(max-width: 640px)').matches ? 'close' : 'logout'}</span>
       </button>
 
       <div className="play-header">
         <span className="play-header-title">Barovia</span>
       </div>
 
-      <PlayMessages msgs={msgs} loading={loading} latestRef={latestRef} />
+      <PlayMessages msgs={msgs} loading={loading} latestRef={latestRef} onRollPrompt={handleRollPrompt} />
       <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} sheetOpen={sheetOpen} onToggleSheet={() => setSheetOpen(o => !o)} />
 
       {sheetOpen && <>

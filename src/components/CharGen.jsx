@@ -58,7 +58,7 @@ export default function CharGen({ character, onComplete, onBack }) {
         ...prev,
         background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
         cantrips: finalSpells?.cantrips ?? prev.cantrips,
-        spellsKnown: finalSpells?.spells ?? prev.spellsKnown,
+        spellsKnown: finalSpells?.spells.map(name => ({ name, level: 1 })) ?? prev.spellsKnown,
         spellSlots: SLOT_TABLE[character.class] ? SLOT_TABLE[character.class][0].map(s => ({ ...s, used: 0 })) : prev.spellSlots,
       }
     })
@@ -106,14 +106,14 @@ export default function CharGen({ character, onComplete, onBack }) {
                   const newSubclass = subs[(subs.findIndex(s => s.name === p.subclass) - 1 + subs.length) % subs.length].name
                   const baseSpells = SPELL_ASSIGNMENTS[character.class]?.[p.background] ?? null
                   const finalSpells = baseSpells ? applySubclassSpells(character.class, newSubclass, baseSpells.cantrips, baseSpells.spells) : null
-                  return { ...p, subclass: newSubclass, ...(finalSpells ? { cantrips: finalSpells.cantrips, spellsKnown: finalSpells.spells } : {}) }
+                  return { ...p, subclass: newSubclass, ...(finalSpells ? { cantrips: finalSpells.cantrips, spellsKnown: finalSpells.spells.map(name => ({ name, level: 1 })) } : {}) }
                 })}
                 nextSubclass={() => setSheet(p => {
                   const subs = CLASS_CONFIG[character.class].subclasses
                   const newSubclass = subs[(subs.findIndex(s => s.name === p.subclass) + 1) % subs.length].name
                   const baseSpells = SPELL_ASSIGNMENTS[character.class]?.[p.background] ?? null
                   const finalSpells = baseSpells ? applySubclassSpells(character.class, newSubclass, baseSpells.cantrips, baseSpells.spells) : null
-                  return { ...p, subclass: newSubclass, ...(finalSpells ? { cantrips: finalSpells.cantrips, spellsKnown: finalSpells.spells } : {}) }
+                  return { ...p, subclass: newSubclass, ...(finalSpells ? { cantrips: finalSpells.cantrips, spellsKnown: finalSpells.spells.map(name => ({ name, level: 1 })) } : {}) }
                 })}
               />
             </div>

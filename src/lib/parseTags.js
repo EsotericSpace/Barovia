@@ -23,8 +23,16 @@ export function parseTags(raw) {
       tags.push({ type: 'condition', val: s.trim() })
       return ''
     })
-    .replace(/\[SPELL:slot\]/g, () => {
-      tags.push({ type: 'spellslot' })
+    .replace(/\[SPELL:slot:(\d+)\]/g, (_, n) => {
+      tags.push({ type: 'spellslot', level: parseInt(n) })
+      return ''
+    })
+    .replace(/\[ROLLPROMPT:([^\]]+)\]/g, (_, skill) => {
+      tags.push({ type: 'rollprompt', skill: skill.trim() })
+      return ''
+    })
+    .replace(/\[SPELL:learn:([^:]+):(\d+)\]/g, (_, name, level) => {
+      tags.push({ type: 'spelllearn', name: name.trim(), level: parseInt(level) })
       return ''
     })
     .replace(/\[SHORTREST\]/g, () => {

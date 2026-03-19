@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { SK, SA, mod, modStr, SKILLS, PROF_BONUS, skillMod } from '../lib/dnd.js'
+import { SK, SA, mod, modStr, SKILLS, PROF_BONUS, skillMod, spellLevelStr } from '../lib/dnd.js'
 import { CLASS_CONFIG } from '../data/classes.js'
 import { CONDITIONS } from '../data/conditions.js'
-import MonsterBlock from './MonsterBlock.jsx'
 
 function Section({ label, open, onToggle, children }) {
   return (
@@ -34,16 +33,22 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
   const expertise = character.expertise ?? []
   const profLevel = name => expertise.includes(name) ? 2 : allProfs.includes(name) ? 1 : 0
 
+  const hasSpells = !!(character.spellSlots?.length > 0 || character.cantrips?.length > 0)
   const tabs = [
     { key: 'identity', label: 'Identity' },
     { key: 'stats', label: 'Stats' },
+    ...(hasSpells ? [{ key: 'spells', label: 'Spells' }] : []),
   ]
 
   return (
     <div className="panel play-sheet">
 
       <div className="chargen-header">
-        <div className="cg-header-left" />
+        <div className="cg-header-left">
+          <button className="ps-close-btn" onClick={() => setSheetOpen(false)} title="Close">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
         <div className="cg-header-center">
           <div className="cg-name">{character.name}</div>
           <div className="cg-identity">{character.subclass} {character.class} · Lv {character.level ?? 1} · {character.background}</div>
@@ -51,7 +56,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
         <div className="cg-header-right" />
       </div>
 
-      <div className="cg-tab-bar">
+      <div className="cg-tab-bar" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
         {tabs.map(t => (
           <button
             key={t.key}
@@ -63,9 +68,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
         ))}
       </div>
 
-      {character.activeMonster && <MonsterBlock monster={character.activeMonster} />}
-
-      <div className="cg-content">
+<div className="cg-content">
 
         {tab === 'identity' && (
           <div className="cg-col">
@@ -211,58 +214,6 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
               </div>
             </div>
 
-            {character.spellSlots?.length > 0 && (
-              <div>
-                <div className="ps-section-header">Spell Slots</div>
-                <div className="cg-col">
-                  {character.spellSlots.map((tier, ti) => (
-                    <div key={tier.level}>
-                      <div className="ps-spell-tier-label">Level {tier.level}</div>
-                      <div className="ps-spell-btns">
-                        {Array.from({ length: tier.total }).map((_, i) => {
-                          const used = i < (tier.used ?? 0)
-                          return (
-                            <button
-                              key={i}
-                              className={`ps-spell-btn${used ? ' used' : ''}`}
-                              onClick={() => onCharacterUpdate?.(c => {
-                                const slots = c.spellSlots.map((s, si) => si === ti ? { ...s, used: s.used >= s.total ? 0 : s.used + 1 } : s)
-                                return { ...c, spellSlots: slots }
-                              })}
-                              title={used ? 'Slot used · click to restore' : 'Slot available · click to use'}
-                            >{used ? '·' : `L${tier.level}`}</button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                  <div className="ps-spell-summary">
-                    {character.spellSlots.reduce((a, s) => a + (s.used ?? 0), 0)}/{character.spellSlots.reduce((a, s) => a + s.total, 0)} used · recovers on {character.shortRestCaster ? 'short' : 'long'} rest
-                  </div>
-                </div>
-                {character.cantrips?.length > 0 && (
-                  <div className="ps-spell-group">
-                    <div className="ps-spell-group-label">Cantrips</div>
-                    <div className="ps-spell-tags">
-                      {character.cantrips.map(s => (
-                        <span key={s} className="ps-spell-tag">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {character.spellsKnown?.length > 0 && (
-                  <div className="ps-spell-group">
-                    <div className="ps-spell-group-label">Spells Known</div>
-                    <div className="ps-spell-tags ps-spell-tags--col">
-                      {character.spellsKnown.map(s => (
-                        <span key={s} className="ps-spell-tag">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             <div>
               <div className="ps-section-header">Saving Throws</div>
               <div className="ps-saving-grid">
@@ -278,6 +229,41 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
                 })}
               </div>
             </div>
+
+          </div>
+        )}
+
+        {tab === 'spells' && (
+          <div className="cg-col">
+
+            {(character.cantrips?.length > 0 || character.spellsKnown?.length > 0) && (
+              <div>
+                <div className="ps-section-header">Spells</div>
+                {character.spellSlots?.length > 0 && (
+                  <div className="ps-spell-summary">
+                    {character.spellSlots.reduce((a, s) => a + (s.used ?? 0), 0)}/{character.spellSlots.reduce((a, s) => a + s.total, 0)} slots used · recovers on {character.shortRestCaster ? 'short' : 'long'} rest
+                  </div>
+                )}
+                <div className="spell-list">
+                  {(character.cantrips ?? []).map(s => (
+                    <div key={s} className="list-row">
+                      <span className="spell-name">{s}</span>
+                      <span className="spell-tier">cantrip</span>
+                    </div>
+                  ))}
+                  {(character.spellsKnown ?? []).map(s => {
+                    const name = typeof s === 'string' ? s : s.name
+                    const level = typeof s === 'string' ? 1 : s.level
+                    return (
+                      <div key={name} className="list-row">
+                        <span className="spell-name">{name}</span>
+                        <span className="spell-tier">{spellLevelStr(level)}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
           </div>
         )}
