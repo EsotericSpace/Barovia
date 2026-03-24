@@ -1,67 +1,72 @@
 import { useState, useEffect } from 'react'
 import Barovia from './components/Barovia.jsx'
-import Setup from './components/Setup.jsx'
 import CharGen from './components/CharGen.jsx'
 import Play from './components/Play.jsx'
 import SettingsButton from './components/SettingsButton.jsx'
 import { useMusic } from './hooks/useMusic.js'
+import {
+  migrate, getActiveSlot, persistActiveSlot,
+  loadSlot, writeSlot, clearSlot, loadAllSlots,
+} from './lib/saves.js'
 
-const SAVE_KEY = 'barovia_save'
-
-function loadSave() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
+migrate()
 
 export default function App() {
-  const saved = loadSave()
-  const [phase, setPhase] = useState(saved?.phase ?? 'landing')
-  const [character, setCharacter] = useState(saved?.character ?? null)
+  const [activeSlot, setActiveSlot] = useState(() => getActiveSlot())
+  const [phase, setPhase]           = useState(() => loadSlot(getActiveSlot())?.phase ?? 'landing')
+  const [character, setCharacter]   = useState(() => loadSlot(getActiveSlot())?.character ?? null)
+  const [savesModal, setSavesModal]  = useState(false)
   const { volume, setVolume, muted, toggleMute, startAudio } = useMusic(!!(character?.activeMonster))
   const audioProps = { volume, setVolume, muted, toggleMute }
+  const hasAnySave = loadAllSlots().some(s => s !== null)
 
   useEffect(() => {
-    if (phase === 'play' && character) {
-      localStorage.setItem(SAVE_KEY, JSON.stringify({ phase, character }))
-    }
-  }, [phase, character])
+    if (phase === 'play' && character) writeSlot(activeSlot, phase, character)
+  }, [phase, character, activeSlot])
+
+  function switchSlot(slot, startNew = false) {
+    const saved = startNew ? null : loadSlot(slot)
+    if (startNew) clearSlot(slot)
+    setActiveSlot(slot)
+    persistActiveSlot(slot)
+    setCharacter(saved?.character ?? null)
+    setPhase(saved && !startNew ? 'play' : 'chargen')
+  }
 
   function newGame() {
-    localStorage.removeItem(SAVE_KEY)
-    localStorage.removeItem('barovia_msgs')
-    setCharacter(null)
-    setPhase('setup')
+    const slots = loadAllSlots()
+    const emptyIdx = slots.findIndex(s => s === null)
+    const target = emptyIdx >= 0 ? emptyIdx : 0
+    switchSlot(target, true)
+  }
+
+  const settingsProps = {
+    volume, setVolume, muted, toggleMute,
+    activeSlot,
+    onLoadSlot: slot => switchSlot(slot, false),
+    onNewInSlot: slot => switchSlot(slot, true),
+    savesModal,
+    onSavesModalClose: () => setSavesModal(false),
   }
 
   const screen = (() => {
     if (phase === 'landing') return (
       <Barovia
         onEnter={newGame}
-        hasSave={!!saved}
+        hasSave={!!loadSlot(activeSlot)}
         onContinue={() => setPhase('play')}
+        hasAnySave={hasAnySave}
+        onLoadGames={() => setSavesModal(true)}
         startAudio={startAudio}
-        {...audioProps}
-      />
-    )
-    if (phase === 'setup') return (
-      <Setup
-        onComplete={(name, cls) => {
-          setCharacter({ name, class: cls })
-          setPhase('chargen')
-        }}
         {...audioProps}
       />
     )
     if (phase === 'chargen') return (
       <CharGen
-        character={character}
-        onBack={() => setPhase('setup')}
+        onBack={() => setPhase('landing')}
         onComplete={(sheet) => {
-          setCharacter(c => ({
-            ...c, ...sheet,
+          setCharacter({
+            ...sheet,
             hp: sheet.maxHp,
             inventory: [...sheet.equip],
             activeMonster: null,
@@ -70,20 +75,21 @@ export default function App() {
             milestones: [],
             currentLocation: null,
             deathSaves: { successes: 0, failures: 0 },
-          }))
+          })
           setPhase('play')
         }}
+        settingsSlot={<SettingsButton {...settingsProps} />}
         {...audioProps}
       />
     )
     return (
       <Play
         character={character}
+        slotIndex={activeSlot}
         onCharacterUpdate={updater => {
           setCharacter(prev => typeof updater === 'function' ? updater(prev) : updater)
         }}
         onExit={() => setPhase('landing')}
-        {...audioProps}
       />
     )
   })()
@@ -91,7 +97,9 @@ export default function App() {
   return (
     <>
       {screen}
-      <SettingsButton volume={volume} setVolume={setVolume} muted={muted} toggleMute={toggleMute} className="app-settings" />
+      {phase !== 'chargen' && (
+        <SettingsButton {...settingsProps} className="app-settings" />
+      )}
     </>
   )
 }
