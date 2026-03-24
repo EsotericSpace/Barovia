@@ -3,7 +3,7 @@ import BaroviaFX from './BaroviaFX.jsx'
 
 const letters = ["B", "a", "r", "o", "v", "i", "a"];
 
-export default function Barovia({ onEnter, hasSave, onContinue, startAudio }) {
+export default function Barovia({ onEnter, hasSave, onContinue, hasAnySave, onLoadGames, startAudio }) {
   const [visible, setVisible] = useState(false);
   const [t, setT] = useState(0);
   const [enterVisible, setEnterVisible] = useState(false);
@@ -58,10 +58,13 @@ export default function Barovia({ onEnter, hasSave, onContinue, startAudio }) {
           {hasSave && (
             <button className="landing-btn ebtn btn-mobile-cta" onClick={() => { startAudio(); onContinue() }}>Continue</button>
           )}
+          {hasAnySave && (
+            <button className="landing-btn ebtn btn-mobile-cta secondary" onClick={() => { startAudio(); onLoadGames() }}>Load Game</button>
+          )}
           <button
-            className={`landing-btn ebtn btn-mobile-cta${hasSave ? ' secondary' : ''}`}
+            className={`landing-btn ebtn btn-mobile-cta${hasSave || hasAnySave ? ' secondary' : ''}`}
             onClick={() => { startAudio(); onEnter() }}
-          >{hasSave ? 'New Game' : 'Enter'}</button>
+          >{hasSave || hasAnySave ? 'New Game' : 'Enter'}</button>
         </div>
 
       </div>

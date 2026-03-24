@@ -1,5 +1,6 @@
 export const CLASS_CONFIG = {
   Barbarian: {
+    blurb: 'Rage is your oldest truth, louder than fear, older than reason. Where others falter beneath Barovia\'s dread, you meet it with something it has never faced: something that does not know how to stop.',
     hd: 12, pri: ['strength', 'constitution'],
     skillPool: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'],
     skillProfCount: 2, stProfs: ['strength', 'constitution'], expertiseCount: 0,
@@ -16,6 +17,7 @@ export const CLASS_CONFIG = {
     narrative: 'This barbarian\'s rage is already part of them — primal fury, ancestral spirits, or berserker instinct. Barovia\'s oppressive dread presses on them constantly; their rage is one of the few things that feels real and honest here. Lean into the tension between raw emotion and the land\'s psychological horror.',
   },
   Bard: {
+    blurb: 'You have always known that stories are power. In a land that has buried its history under centuries of silence, the right words can unlock what blades cannot. The Vistani say the mists remember everything. So do you.',
     hd: 8, pri: ['charisma'],
     skillPool: null,
     skillProfCount: 3, stProfs: ['dexterity', 'charisma'], expertiseCount: 2,
@@ -32,6 +34,7 @@ export const CLASS_CONFIG = {
     narrative: 'Bards are lore-keepers and performers. In Barovia, their knowledge of stories, legends, and history is unusually valuable — the land has a long, dark past that almost no one will speak of directly. The Vistani recognize skilled performers and may open up to them. A bard\'s magic comes from inspiration and emotion, which Barovia is not short of.',
   },
   Cleric: {
+    blurb: 'Your god sent you here, or permitted you to come, for reasons neither of you has fully spoken aloud. In a land crawling with the undead, your faith is not merely comfort. It is a weapon. Whether it will be enough is another matter.',
     hd: 8, pri: ['wisdom'],
     skillPool: ['History', 'Insight', 'Medicine', 'Persuasion', 'Religion'],
     skillProfCount: 2, stProfs: ['wisdom', 'charisma'], expertiseCount: 0,
@@ -53,6 +56,7 @@ export const CLASS_CONFIG = {
     narrative: 'This cleric already serves a deity — that relationship is established and real. In Barovia, divine magic functions but feels strained, as if prayers travel farther before being heard. Their god sent them here, or allowed them to come, for a reason neither may fully understand yet. Undead are abundant; Turn Undead is relevant and meaningful. Do not question whether their faith is real — it is.',
   },
   Druid: {
+    blurb: 'You feel it the moment you arrive: the land is wrong. The trees grow toward nothing, the animals do not behave as animals should. Something has been poisoning this place for a very long time, and you are the first thing in years that has noticed.',
     hd: 8, pri: ['wisdom'],
     skillPool: ['Arcana', 'Animal Handling', 'Insight', 'Medicine', 'Nature', 'Perception', 'Religion', 'Survival'],
     skillProfCount: 2, stProfs: ['intelligence', 'wisdom'], expertiseCount: 0,
@@ -69,6 +73,7 @@ export const CLASS_CONFIG = {
     narrative: 'Barovia\'s nature is deeply wrong — the forests are unnatural, animals behave strangely, and the land itself feels like it is in pain. A druid feels this wrongness acutely, like a persistent low sound no one else can hear. This is not their favored terrain; it is a corrupted one. Their connection to nature gives them unique insight into how badly Barovia has been wounded.',
   },
   Fighter: {
+    blurb: 'You have trained for war, and war has trained you back. In a land that breaks the minds of the brave and the hearts of the just, your discipline is the one thing Barovia cannot take. As long as you keep hold of it.',
     hd: 10, pri: ['strength', 'dexterity'],
     skillPool: ['Acrobatics', 'Animal Handling', 'Athletics', 'History', 'Insight', 'Intimidation', 'Perception', 'Survival'],
     skillProfCount: 2, stProfs: ['strength', 'constitution'], expertiseCount: 0,
@@ -86,6 +91,7 @@ export const CLASS_CONFIG = {
     narrative: 'Fighters are disciplined, trained warriors. Their competence is reliable in a land full of threats. Barovia tests mental fortitude as much as physical — the horror is psychological. A fighter\'s training helps them stay functional under pressure, but no amount of sword practice prepares someone for what lives in these mists.',
   },
   Monk: {
+    blurb: 'You have spent years learning stillness. Barovia is a test of that stillness, a place designed, it seems, to unsettle the settled. Your ki flows here differently, pressed against by something old. You breathe. You center. You continue.',
     hd: 8, pri: ['dexterity', 'wisdom'],
     skillPool: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'],
     skillProfCount: 2, stProfs: ['strength', 'dexterity'], expertiseCount: 0,
@@ -103,6 +109,7 @@ export const CLASS_CONFIG = {
     narrative: 'A monk\'s power comes from inner discipline and ki — a force that Barovia\'s dark energy presses against constantly. Maintaining stillness of mind here is a genuine struggle. Their unarmed combat and mobility make them unusual in a land where everyone else relies on weapons. Locals may find them unsettling or strange.',
   },
   Paladin: {
+    blurb: 'Your oath was not made lightly, and it has not been forgotten. In a land of endless undead and moral ruin, you are exactly what was needed, and exactly what Strahd finds most interesting. Your conviction is your greatest strength. It is also your most obvious target.',
     hd: 10, pri: ['strength', 'charisma'],
     skillPool: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'],
     skillProfCount: 2, stProfs: ['wisdom', 'charisma'], expertiseCount: 0,
@@ -120,6 +127,7 @@ export const CLASS_CONFIG = {
     narrative: 'This paladin has already sworn their oath — it defines them. In Barovia, undead are everywhere and a paladin\'s Divine Smite and Turn Undead are among the most potent tools available. Their oath will be tested; Barovia specializes in moral ambiguity, impossible choices, and situations where no option is clean. Play into that tension without breaking them unnecessarily.',
   },
   Ranger: {
+    blurb: 'You have hunted in dark places before, but nothing like this. The tracks here do not follow natural patterns. The forests do not want to be read. Whatever hunts in Barovia does not behave like prey. It may, in fact, be hunting you.',
     hd: 10, pri: ['dexterity', 'wisdom'],
     skillPool: ['Animal Handling', 'Athletics', 'Insight', 'Investigation', 'Nature', 'Perception', 'Stealth', 'Survival'],
     skillProfCount: 3, stProfs: ['strength', 'dexterity'], expertiseCount: 0,
@@ -136,6 +144,7 @@ export const CLASS_CONFIG = {
     narrative: 'Rangers are hunters and trackers. Their favored terrain is unlikely to be Barovia\'s cursed forests, which means they are operating outside their comfort zone in a landscape that actively resists being read. Undead make for an excellent favored enemy here. Their Perception and Survival skills are constantly relevant in a land full of hidden threats.',
   },
   Rogue: {
+    blurb: 'There are secrets buried in every locked door, every averted gaze, every word the villagers will not say. In a land built on fear and silence, the truth belongs to whoever is willing to go looking for it. You are very good at looking.',
     hd: 8, pri: ['dexterity'],
     skillPool: ['Acrobatics', 'Athletics', 'Deception', 'Insight', 'Intimidation', 'Investigation', 'Perception', 'Performance', 'Persuasion', 'Sleight of Hand', 'Stealth'],
     skillProfCount: 4, stProfs: ['dexterity', 'intelligence'], expertiseCount: 2,
@@ -154,6 +163,7 @@ export const CLASS_CONFIG = {
     narrative: 'Barovia is full of secrets, locked doors, hidden passages, and people who are lying. A rogue\'s Investigation, Stealth, and social skills are among the most useful in the campaign. Thieves\' Cant may connect them to Barovian criminal networks or the Vistani, who have their own codes. Their ability to operate in the shadows makes them well-suited to a land where open confrontation is rarely the right answer.',
   },
   Sorcerer: {
+    blurb: 'Magic was never something you learned. It simply is, threaded through you like a second pulse. The Dark Powers that rule this land have noticed. Something about the mists recognizes what lives in your blood, and it has been watching ever since you arrived.',
     hd: 6, pri: ['charisma'],
     skillPool: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'],
     skillProfCount: 2, stProfs: ['constitution', 'charisma'], expertiseCount: 0,
@@ -170,6 +180,7 @@ export const CLASS_CONFIG = {
     narrative: 'A sorcerer\'s magic is in their blood — it is not learned, it simply is. The Dark Powers that rule Barovia are drawn to innate magical talent. A sorcerer may feel the land responding to them in subtle, unsettling ways. Their wild or bloodline power pulses differently here, occasionally stronger than expected, occasionally sluggish, as if the mists are tasting it.',
   },
   Warlock: {
+    blurb: 'The pact is already made. Your patron\'s voice is a constant presence, closer here, or perhaps quieter. It is hard to say. What is clear is that Barovia belongs to something else. Two powers now have a claim on you. They are not the same.',
     hd: 8, pri: ['charisma'],
     skillPool: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'],
     skillProfCount: 2, stProfs: ['wisdom', 'charisma'], expertiseCount: 0,
@@ -187,6 +198,7 @@ export const CLASS_CONFIG = {
     narrative: 'The pact is already made — it is not a future event, it is who this character is. Their patron (Fiend, Great Old One, or Archfey) is a constant presence, a voice or sensation at the edge of awareness. In Barovia, that patron may have sent them here deliberately, or may be unusually quiet — the Dark Powers do not share their domain easily. The warlock should feel the tension between their patron\'s agenda and Strahd\'s absolute control of this land. Eldritch Blast is their reliable tool; lean into the alien quality of their power.',
   },
   Wizard: {
+    blurb: 'You came to Barovia because something about it did not make sense, and things that do not make sense demand an explanation. The mists are not natural. The magic here follows rules that predate your training. Your spellbook is full. You are going to need more pages.',
     hd: 6, pri: ['intelligence'],
     skillPool: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'],
     skillProfCount: 2, stProfs: ['intelligence', 'wisdom'], expertiseCount: 0,

@@ -2,10 +2,18 @@ import { CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SPELL_ASSIGNMENTS, applySubclassSpells } from '../data/spells.js'
 import { SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
-import { SK, SKILLS, mod } from './dnd.js'
+import { SK, SKILLS, mod, PROF_BONUS, BASE_SPEED } from './dnd.js'
 
 export function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
 export function pickN(arr, n) { return [...arr].sort(() => Math.random() - 0.5).slice(0, n) }
+
+export function calcAC(cls, subclass, stats) {
+  const dex = mod(stats.dexterity)
+  if (cls === 'Barbarian') return 10 + dex + mod(stats.constitution)
+  if (cls === 'Monk')      return 10 + dex + mod(stats.wisdom)
+  if (cls === 'Sorcerer' && subclass === 'Draconic Bloodline') return 13 + dex
+  return 10 + dex
+}
 
 function roll4d6() {
   const d = [0,1,2,3].map(() => Math.floor(Math.random() * 6) + 1)
@@ -45,7 +53,10 @@ export function generateSheet(cls) {
     bond: pick(bg.bond), flaw: pick(bg.flaw),
     equip: [...bg.equip],
     maxHp: cfg.hd + mod(stats.constitution),
-    ac: 10 + mod(stats.dexterity),
+    ac: calcAC(cls, subclass, stats),
+    initiative: mod(stats.dexterity),
+    speed: BASE_SPEED,
+    profBonus: PROF_BONUS,
     hd: cfg.hd,
     cantrips: finalSpells?.cantrips ?? [],
     spellsKnown: finalSpells?.spells ?? [],

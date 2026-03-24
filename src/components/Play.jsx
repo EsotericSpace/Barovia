@@ -10,15 +10,7 @@ import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
 import { CONDITIONS } from '../data/conditions.js'
-
-const MSGS_KEY = 'barovia_msgs'
-
-function loadMsgs() {
-  try {
-    const raw = localStorage.getItem(MSGS_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
+import { loadMsgs, writeMsgs } from '../lib/saves.js'
 
 const SKILL_MAP = {
   athletics: 'strength',
@@ -48,8 +40,8 @@ const MILESTONE_LOCATIONS = Object.fromEntries(
   )
 )
 
-export default function Play({ character, onCharacterUpdate, onExit, volume, setVolume, muted, toggleMute }) {
-  const saved = loadMsgs()
+export default function Play({ character, slotIndex, onCharacterUpdate, onExit }) {
+  const saved = loadMsgs(slotIndex ?? 0)
   const [msgs, setMsgs] = useState(saved?.display ?? [])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,34 +52,46 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
   const latestRef = useRef(null)
   const taRef     = useRef(null)
   const charRef   = useRef(character)
+  const msgsRef   = useRef(msgs)
+  const slotRef   = useRef(slotIndex)
 
   useEffect(() => { charRef.current = character }, [character])
+  useEffect(() => { msgsRef.current = msgs }, [msgs])
+  useEffect(() => { slotRef.current = slotIndex }, [slotIndex])
   useEffect(() => { latestRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [msgs, loading])
   useEffect(() => {
-    if (msgs.length > 0) {
-      localStorage.setItem(MSGS_KEY, JSON.stringify({ display: msgs, history: histRef.current }))
+    if (msgs.length > 0) writeMsgs(slotIndex, msgs, histRef.current)
+  }, [msgs, slotIndex])
+  useEffect(() => {
+    function handleBeforeUnload() {
+      if (msgsRef.current.length > 0) writeMsgs(slotRef.current, msgsRef.current, histRef.current)
     }
-  }, [msgs])
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   useEffect(() => {
     if (saved?.display?.length) return
     sysRef.current = buildSystemPrompt(character)
     const init = [{ role: 'user', content: 'Begin.' }]
-    callDM(init).then(({ text, tags }) => {
+    const ctrl = new AbortController()
+    setLoading(true)
+    callDM(init, ctrl.signal).then(({ text, tags }) => {
       histRef.current = [...init, { role: 'assistant', content: text }]
       const buf = [{ role: 'assistant', content: text, id: 'open' }]
       applyTags(tags, buf)
       setMsgs(buf)
       setLoading(false)
-    })
-    setLoading(true)
+    }).catch(() => {})
+    return () => ctrl.abort()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function callDM(history) {
+  async function callDM(history, signal) {
     const r = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: sysRef.current, messages: history }),
+      signal,
     })
     const d = await r.json()
     if (d.error) throw new Error(d.error)
@@ -103,11 +107,17 @@ export default function Play({ character, onCharacterUpdate, onExit, volume, set
           .then(d => { if (d) onCharacterUpdate(c => ({ ...c, activeMonster: d })) })
           .catch(() => {})
       }
+      if (t.type === 'endcombat') {
+        onCharacterUpdate(c => ({ ...c, activeMonster: null }))
+      }
       if (t.type === 'item') {
         const add = t.val.startsWith('+')
-        const item = t.val.slice(1)
+        const raw = t.val.slice(1).trim()
+        const item = raw.charAt(0).toUpperCase() + raw.slice(1)
         onCharacterUpdate(c => ({
-          ...c, inventory: add ? [...c.inventory, item] : c.inventory.filter(i => i !== item),
+          ...c, inventory: add
+            ? c.inventory.some(i => i.toLowerCase() === item.toLowerCase()) ? c.inventory : [...c.inventory, item]
+            : c.inventory.filter(i => i.toLowerCase() !== item.toLowerCase()),
         }))
       }
       if (t.type === 'hp') onCharacterUpdate(c => {

@@ -51,6 +51,10 @@ export function parseTags(raw) {
       tags.push({ type: 'dead' })
       return ''
     })
+    .replace(/\[ENDCOMBAT\]/g, () => {
+      tags.push({ type: 'endcombat' })
+      return ''
+    })
     .replace(/\[TAROKKA\]/g, () => {
       tags.push({ type: 'tarokka' })
       return ''
