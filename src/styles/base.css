@@ -1,0 +1,479 @@
+/* ── Icons ── */
+/* Global default — all icon glyphs */
+.material-symbols-outlined {
+  font-variation-settings: "wght" 200;
+  font-size: var(--icon-size);
+  line-height: 1;
+}
+
+/* ── Type ── */
+.display {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 14vw, 11rem);
+  font-weight: 700;
+  letter-spacing: var(--ls-widest);
+  text-transform: uppercase;
+  color: var(--accent);
+  line-height: 1;
+}
+.label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.body {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* ── Shared font patterns ── */
+
+/* ─ Headers ─ */
+/* Prominent entity names and display values — uppercase, accent by default */
+.cg-name,
+.monster-name,
+.bg-name,
+.ps-bg-name,
+.game-over-title,
+.ps-stat-val {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-base);
+  color: var(--accent);
+}
+/* .roll-total — same Cinzel base; color always applied by .roll-color-* classes */
+.roll-total {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-base);
+}
+/* letter-spacing */
+.bg-name,
+.ps-bg-name {
+  letter-spacing: var(--ls-wide);
+}
+.game-over-title {
+  letter-spacing: var(--ls-snug);
+}
+/* color */
+.game-over-title {
+  color: var(--accent-primary);
+}
+.ps-stat-val {
+  color: var(--text);
+}
+
+/* ─ Section labels ─ */
+/* Cinzel structural headings and identity lines — ls-wide, text-secondary by default */
+.sl,
+.section-label,
+.ps-section-header,
+.cg-identity,
+.ps-identity,
+.settings-modal-title,
+.settings-section-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-secondary);
+}
+/* size */
+.sl,
+.section-label,
+.ps-section-header,
+.settings-modal-title {
+  font-size: var(--fs-sm);
+}
+/* font-weight */
+.sl,
+.section-label,
+.ps-section-header {
+  font-weight: 600;
+}
+/* letter-spacing */
+.settings-modal-title,
+.ps-identity {
+  letter-spacing: var(--ls-base);
+}
+/* color */
+.settings-modal-title {
+  color: var(--text-tertiary);
+}
+.settings-section-label {
+  color: var(--text-secondary);
+}
+/* spacing */
+.sl {
+  margin-bottom: var(--sp-sm);
+}
+.ps-section-header {
+  margin-bottom: var(--sp-sm);
+  padding-bottom: var(--sp-xs);
+}
+
+/* ─ Body copy ─ */
+/* Crimson Text prose and descriptive text — fs-sm, lh 1.5, --text by default */
+.msg-dm,
+.msg-player-inner,
+.class-blurb,
+.feature-desc,
+.bg-feature-desc,
+.ps-feature-desc,
+.trait-text,
+.ps-trait-text,
+.bg-desc,
+.ps-bg-desc,
+.skill-name,
+.ps-skill-name,
+.list-row,
+.ps-inv-empty,
+.ps-spell-summary,
+.monster-ability-val,
+.monster-type,
+.monster-stat,
+.monster-action-desc,
+.ps-combat-val,
+.spell-name,
+.spell-list,
+.roll-result,
+.event-detail,
+.game-over-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--text);
+}
+/* size + leading */
+.msg-dm,
+.msg-player-inner,
+.game-over-body {
+  font-size: var(--fs-base);
+  line-height: 1.9;
+}
+/* color */
+.msg-player-inner,
+.monster-type {
+  color: var(--text-tertiary);
+}
+.ps-trait-text,
+.ps-inv-empty,
+.ps-spell-summary,
+.monster-action-desc,
+.event-detail,
+.game-over-body {
+  color: var(--text-secondary);
+}
+
+/* ─ Labels ─ */
+/* Small Cinzel data field identifiers — fs-xs, ls-base, text-inactive by default */
+.stat-key,
+.stat-mod,
+.stat-row .row-key,
+.spell-tier,
+.hp-label,
+.condition-fine,
+.condition-btn,
+.feature-name,
+.trait-label,
+.ps-trait-label,
+.bg-feature-label,
+.ps-feature-label,
+.event-label,
+.monster-ability-key,
+.monster-ability-mod,
+.monster-action-name,
+.ps-combat-key,
+.roll-nat,
+.roll-skill-dc {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-base);
+  color: var(--accent-highlight);
+}
+/* letter-spacing */
+.stat-mod,
+.event-label {
+  letter-spacing: var(--ls-wide);
+}
+.hp-label,
+.condition-fine,
+.condition-btn {
+  letter-spacing: var(--ls-snug);
+}
+/* color */
+.hp-label,
+.condition-fine {
+  color: var(--text-secondary);
+}
+.feature-name,
+.trait-label,
+.ps-trait-label,
+.bg-feature-label,
+.ps-feature-label,
+.event-label,
+.monster-action-name,
+.roll-skill-dc {
+  color: var(--accent-highlight);
+}
+.stat-mod,
+.monster-ability-mod,
+.condition-btn {
+  color: var(--accent-primary);
+}
+/* .roll-nat — color applied by .roll-color-* contextual classes */
+
+/* ─ Buttons ─ */
+/* Cinzel action buttons — uppercase, ls-base, cursor; border, size, color set per component */
+.landing-btn,
+.cg-btn,
+.game-over-return,
+.settings-saves-btn,
+.settings-saves-back {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-base);
+  cursor: pointer;
+}
+/* Primary CTA — red border, gold text */
+.landing-btn,
+.cg-reroll,
+.cg-enter {
+  border: 1px solid var(--accent-primary);
+  color: var(--accent);
+}
+/* Ghost buttons — no visual chrome; layout and color set per component */
+.cg-tab,
+.section-toggle,
+.settings-menu-item {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+/* Clickable containers */
+.condition-btn,
+.settings-save-slot {
+  cursor: pointer;
+}
+/* Icon buttons */
+/* — --icon-size (default, all inherit from .material-symbols-outlined global rule) */
+/* — --icon-size-sm: .lock-btn, .reroll-btn */
+.cg-back-btn,
+.ps-close-btn,
+.scroll-btn,
+.play-send-btn,
+.play-sheet-toggle,
+.topbar-exit,
+.lock-btn,
+.reroll-btn,
+.bg-arrow,
+.settings-btn,
+.settings-close,
+.settings-vol-icon,
+.settings-saves-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-tertiary);
+}
+.lock-btn .material-symbols-outlined,
+.reroll-btn .material-symbols-outlined {
+  font-size: var(--icon-size-sm);
+}
+
+/* ─ Tabs ─ */
+/* Default: fs-xs, text-inactive; active state in component rules */
+.cg-tab-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em; /* hardcoded — no matching token */
+  color: var(--text-inactive);
+}
+
+/* ─ Icon glyphs ─ */
+/* Cinzel decorative numerals and UI glyphs — no uppercase; text-secondary by default */
+.tipwrap .tip,
+.hp-current,
+.hp-max,
+.hp-sep,
+.ds-sep,
+.section-chevron,
+.roll-tip,
+.event-icon {
+  font-family: var(--font-display);
+  color: var(--text);
+}
+/* color */
+.hp-sep {
+  color: var(--accent);
+}
+.tipwrap .tip {
+  color: var(--text-tertiary);
+}
+.ds-sep,
+.section-chevron {
+  color: var(--text-inactive);
+}
+.roll-tip {
+  color: var(--bg-panel);
+}
+
+/* ── Button variants ── */
+.ebtn:hover:not(:disabled) {
+  background: var(--tint-primary) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-highlight) !important;
+}
+.cbtn:hover {
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+.rbtn:hover:not(:disabled) {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+.shbtn:hover {
+  background: var(--tint-primary-xs) !important;
+}
+
+/* ── Tooltip ── */
+.tipwrap {
+  position: relative;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+}
+.tipwrap .tip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + var(--sp-xs));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-snug);
+  padding: 0.2rem 0.45rem;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity var(--dur-fast);
+  z-index: 300;
+}
+.tipwrap:hover .tip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ── Animations ── */
+@keyframes hpdanger {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scaleY(0.7);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleY(1);
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes rollPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hpdanger {
+  animation: hpdanger 1.8s ease-in-out infinite;
+}
+.dm {
+  animation: fadeUp 0.4s ease forwards;
+}
+.player {
+  animation: fadeUp 0.3s ease forwards;
+}
+.rollcard {
+  animation: rollPop 0.25s ease forwards;
+}
+.anim-fade-up {
+  animation: fadeUp 0.4s ease forwards;
+}
+.anim-fade-up.delay-1 {
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+.anim-fade-up.delay-2 {
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+.panel {
+  animation: slideIn 0.25s ease forwards;
+}
+
+/* ── Mobile shared ── */
+@media (max-width: 640px) {
+  .page-footer {
+    display: block;
+    flex-shrink: 0;
+    padding: var(--sp-lg);
+    border-top: 1px solid var(--border);
+  }
+  .btn-mobile-cta {
+    display: block !important;
+    width: 100% !important;
+    font-size: var(--fs-base) !important;
+    padding: var(--sp-sm) var(--sp-md) !important;
+    background: transparent !important;
+    border: 1px solid var(--accent-primary) !important;
+    color: var(--accent) !important;
+    line-height: 1.5 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+  }
+  .btn-mobile-cta:disabled {
+    color: var(--text-inactive) !important;
+    border-color: var(--border) !important;
+    cursor: default !important;
+  }
+}

@@ -1,0 +1,303 @@
+/* ══ Settings ══ */
+
+/* ─ Button & position ─ */
+.settings-btn {
+  justify-content: center;
+  gap: 0.35em;
+}
+.app-settings {
+  position: fixed;
+  top: var(--sp-lg);
+  right: var(--sp-lg);
+  z-index: 500;
+}
+
+.settings-btn .material-symbols-outlined {
+  vertical-align: middle;
+}
+
+/* ─ Backdrop & modal ─ */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.settings-modal {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  padding: var(--sp-lg);
+  width: min(22rem, 90vw);
+  box-shadow: 0 8px 32px var(--overlay);
+}
+.settings-modal--saves {
+  padding: 0;
+}
+
+/* ─ Modal header ─ */
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-bottom: 1.25rem;
+}
+.settings-modal-title {
+  font-size: var(--fs-sm);
+  flex: 1;
+  text-align: center;
+}
+.settings-close {
+  color: var(--text-inactive);
+  transition: color var(--dur-base);
+}
+.settings-close:hover {
+  color: var(--text-secondary);
+}
+
+/* ─ Audio ─ */
+.settings-section-label {
+  margin-bottom: var(--sp-sm);
+}
+.settings-volume-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+.settings-vol-icon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: color var(--dur-base);
+}
+.settings-vol-icon:hover {
+  color: var(--text);
+}
+.settings-vol-icon.muted {
+  color: var(--text-inactive);
+}
+.volume-slider {
+  flex: 1;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+  height: 3px;
+}
+
+/* ─ Menu ─ */
+.settings-menu {
+  display: flex;
+  flex-direction: column;
+}
+.settings-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--sp-sm) 0;
+  color: var(--text-secondary);
+  transition: color var(--dur-fast);
+}
+.settings-menu-item:hover {
+  color: var(--text);
+}
+.settings-menu-item .material-symbols-outlined {
+  color: var(--text-inactive);
+}
+
+/* ─ Small caps display label (shared base) ─ */
+.settings-menu-label,
+.settings-saves-title,
+.settings-save-meta {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+
+/* ─ Save slots: header ─ */
+.settings-saves-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: var(--sp-md) var(--sp-lg);
+}
+.settings-saves-title {
+  color: var(--text-secondary);
+  text-align: center;
+}
+.settings-saves-back {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  transition: color var(--dur-fast);
+}
+.settings-saves-back:hover {
+  color: var(--text-tertiary);
+}
+.settings-saves-close {
+  justify-content: flex-end;
+  color: var(--text-tertiary);
+  opacity: 0.4;
+  transition: opacity var(--dur-fast);
+}
+.settings-saves-close:hover {
+  opacity: 0.8;
+}
+
+/* ─ Save slot list ─ */
+.settings-saves {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-md);
+}
+.settings-save-slot {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid transparent;
+  transition: border-color var(--dur-fast);
+}
+.settings-save-slot.selected {
+  border-color: var(--tint-primary-dim);
+}
+.settings-save-accent {
+  width: 3px;
+  flex-shrink: 0;
+  background: var(--border);
+  transition: background var(--dur-fast);
+}
+.settings-save-accent.selected {
+  background: var(--accent-primary);
+}
+.settings-save-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--sp-base);
+  padding: var(--sp-md) var(--sp-base);
+  flex: 1;
+  background: var(--bg);
+  transition: background var(--dur-fast);
+}
+.settings-save-inner.selected {
+  background: var(--tint-primary-xs);
+}
+.settings-save-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+/* Unselected slot: all text and level col in border color */
+.settings-save-meta,
+.settings-save-name,
+.settings-save-subtitle,
+.settings-save-level-num,
+.settings-save-level-label,
+.settings-save-level-class {
+  color: var(--border);
+  transition: color var(--dur-fast);
+}
+
+/* Slot left column */
+.settings-save-meta.selected {
+  color: var(--accent-primary);
+}
+.settings-save-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-base);
+  text-transform: uppercase;
+}
+.settings-save-inner.selected .settings-save-name {
+  color: var(--accent);
+}
+.settings-save-name.empty {
+  font-weight: 400;
+}
+.settings-save-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.settings-save-subtitle.selected {
+  color: var(--text-secondary);
+}
+
+/* Slot level column */
+.settings-save-level-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-xs);
+  border: 1px solid var(--border);
+  padding: var(--sp-xs) var(--sp-sm);
+  transition: border-color var(--dur-fast);
+}
+.settings-save-inner.selected .settings-save-level-col {
+  border-color: var(--accent-primary);
+}
+.settings-save-level-num {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1;
+}
+.settings-save-level-num.selected {
+  color: var(--accent);
+}
+.settings-save-level-label,
+.settings-save-level-class {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+}
+.settings-save-level-label {
+  letter-spacing: var(--ls-base);
+}
+.settings-save-level-class {
+  letter-spacing: var(--ls-snug);
+}
+.settings-save-level-label.selected,
+.settings-save-level-class.selected {
+  color: var(--text-tertiary);
+}
+
+/* ─ Footer buttons ─ */
+.settings-saves-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+}
+.settings-saves-btn {
+  font-size: var(--fs-xs);
+  border: 1px solid var(--border);
+  padding: var(--sp-xs) var(--sp-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast);
+}
+.settings-saves-btn:disabled {
+  color: var(--border);
+  border-color: var(--hp-track);
+  cursor: default;
+}
+.settings-saves-btn.danger:not(:disabled):hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+.settings-saves-btn.primary:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent-primary);
+}
+.settings-saves-btn.primary:not(:disabled):hover {
+  border-color: var(--accent);
+}

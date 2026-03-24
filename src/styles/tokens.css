@@ -1,0 +1,91 @@
+/* ── Scale ── */
+html {
+  font-size: clamp(13px, 1.5vw, 22px);
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: clamp(15px, 4vw, 18px);
+  }
+}
+
+/* ── Tokens ── */
+:root {
+  /* Palette */
+  --bg: #09090b; /* zinc-950 */
+  --bg-panel: #0c090c; /* mauve-950 */
+  --border: #2a212c; /* mauve-800*/
+  --accent-primary: #7f1d1d; /* red-900 */
+  --accent: #fdba74; /* orange-300 */
+  --accent-highlight: #fed7aa; /* orange-200 */
+  --text: #ffedd5; /* orange-100 */
+  --text-secondary: #aba09c; /* taupe-400 */
+  --text-tertiary: #7c6d67; /* taupe-500 */
+  --text-inactive: #5b4f4b; /* taupe-600 */
+  --text-aside: #0f766e; /* teal-700 */
+
+  /* Message borders */
+  --ooc-border: #134e4a; /* teal-900 */
+  --ic-border: #450a0a; /* red-950 */
+
+  /* HP states */
+  --hp-track: #2a212c; /* mauve-800*/
+  --hp-hurt: #f97316; /* orange-500 */
+  --hp-fill-hurt: #7f1d1d; /* red-900 */
+  --hp-fill-danger: #450a0a; /* red-950 */
+
+  /* Roll result colors */
+  --roll-nat20: #fdba74; /* orange-300 */
+  --roll-nat1: #7f1d1d; /* red-900 */
+  --roll-success: #10b981; /* emerald-500 */
+  --roll-success-close: #064e3b; /* emerald-900 */
+  --roll-fail-close: #f97316; /* orange-500 */
+  --roll-fail: #7c2d12; /* orange-900 */
+
+  /* Fonts */
+  --font-display: "Cinzel", serif;
+  --font-body: "Crimson Text", serif;
+
+  /* Type scale — rem scales with clamp() root font-size */
+  --fs-xs: 0.75rem; /* 8px */
+  --fs-sm: 0.875rem; /* 12px */
+  --fs-base: 1rem; /* 16px */
+  --fs-lg: 1.125rem; /* 20px */
+  --fs-xl: 1.25rem; /* 24px */
+
+  /* Spacing — rem scales with clamp() root font-size */
+  --sp-xs: 0.25rem;
+  --sp-sm: 0.5rem;
+  --sp-md: 0.75rem;
+  --sp-base: 1rem;
+  --sp-lg: 1.5rem;
+  --sp-xl: 3rem;
+
+  /* Letter spacing — em scales with local font-size */
+  --ls-snug: 0.05em;
+  --ls-base: 0em;
+  --ls-wide: 0.025em;
+  --ls-widest: 0.05em;
+
+  /* Transition duration */
+  --dur-fast: 0.15s;
+  --dur-base: 0.25s;
+  --dur-slow: 0.4s;
+
+  /* Icon sizes */
+  --icon-size: 2em; /* standard */
+  --icon-size-sm: 1.5em; /* nav arrows */
+  --icon-size-xs: 1em; /* inline (lock, reroll) */
+
+  /* Tints — accent-primary at various opacities */
+  --tint-primary-xs: rgba(136, 19, 55, 0.06);
+  --tint-primary: rgba(127, 29, 29, 0.05);
+  --tint-primary-dim: rgba(136, 19, 55, 0.4);
+  --tint-accent-dim: rgba(245, 158, 11, 0.3);
+
+  /* Overlays */
+  --bg-glass: rgba(6, 6, 8, 0.25);
+  --overlay: rgba(0, 0, 0, 0.55);
+  --overlay-full: rgba(0, 0, 0, 0.9);
+  --overlay-card: rgba(8, 5, 10, 0.8);
+}

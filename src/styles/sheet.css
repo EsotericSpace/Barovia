@@ -1,0 +1,250 @@
+/* ══ Character Sheet ══ */
+
+/* Stat grid */
+.stat-grid,
+.grid-3,
+.ps-combat-grid,
+.ps-saving-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-xs);
+}
+.stat-cell {
+  border: 1px solid var(--border);
+  padding: var(--sp-sm) var(--sp-xs);
+  text-align: center;
+  position: relative;
+}
+.stat-cell.primary {
+  border-color: var(--accent-primary);
+  background: var(--tint-primary);
+}
+.stat-cell.primary .stat-key {
+  color: var(--accent-highlight);
+}
+.stat-val {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: var(--ls-base);
+  text-transform: uppercase;
+  color: var(--text);
+  line-height: 1.1;
+}
+/* Features */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+.feature-name {
+  margin-bottom: 0.15rem;
+}
+
+/* Spells */
+.spell-tier {
+  margin-left: auto;
+}
+
+/* Combat / saves */
+.stat-row {
+  border: 1px solid var(--border);
+  padding: var(--sp-sm) var(--sp-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+.stat-row.prof,
+.stat-row.hi {
+  border-color: var(--accent-primary);
+  background: var(--tint-primary);
+}
+.stat-row .row-key {
+  flex: 1;
+}
+.stat-row.prof .row-key,
+.stat-row.hi .row-key {
+  color: var(--accent-highlight);
+}
+.stat-row .row-val {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-snug);
+  color: var(--text);
+}
+
+/* Inline skill list (chargen) */
+.skill-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  line-height: 1.6;
+}
+.skill-inline-item.expert {
+  color: var(--accent);
+}
+
+/* Skills */
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-xs) 0;
+}
+.list-row.expert {
+  color: var(--accent);
+}
+.list-row.gold {
+  color: var(--accent);
+}
+.ps-skill-val {
+  font-weight: 600;
+}
+.ps-skill-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+/* Inventory */
+.inv-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+.ps-inv-rows {
+  display: flex;
+  flex-direction: column;
+}
+.ps-inv-empty {
+  font-style: italic;
+}
+
+/* Background block */
+.bg-block,
+.ps-bg-block {
+  border: 1px solid var(--border);
+  padding: var(--sp-sm);
+}
+.bg-divider,
+.ps-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: var(--sp-sm);
+}
+.bg-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-xs);
+}
+.bg-name,
+.ps-bg-name {
+  font-size: var(--fs-xs);
+}
+.ps-bg-name {
+  margin-bottom: var(--sp-xs);
+}
+.bg-arrow {
+  color: var(--text-inactive);
+  transition: color var(--dur-fast);
+}
+.bg-arrow:hover {
+  color: var(--text-secondary);
+}
+.class-blurb {
+  min-height: calc(var(--fs-sm) * 1.6 * 6);
+  margin-bottom: var(--sp-sm);
+}
+.bg-desc,
+.ps-bg-desc {
+  margin-bottom: var(--sp-sm);
+  min-height: calc(var(--fs-base) * 1.5 * 5.5);
+}
+.ps-bg-desc {
+  min-height: 0;
+}
+.sc-desc {
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  min-height: calc(var(--fs-base) * 1.5 * 4);
+  margin-bottom: var(--sp-sm);
+}
+.bg-feature-desc {
+  min-height: calc(var(--fs-base) * 1.5 * 5.5);
+}
+.bg-feature-label,
+.ps-feature-label {
+  margin-bottom: var(--sp-xs);
+}
+
+/* Traits */
+.trait-list,
+.ps-trait-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+.trait-block,
+.ps-trait {
+  border-left: 2px solid var(--border);
+  padding-left: var(--sp-sm);
+}
+.trait-block.flaw,
+.ps-trait.flaw {
+  border-left-color: var(--accent-primary);
+}
+.trait-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-xs);
+}
+.ps-trait-label {
+  margin-bottom: var(--sp-xs);
+}
+.trait-block.flaw .trait-label,
+.ps-trait.flaw .ps-trait-label {
+  color: var(--accent-primary);
+}
+.ps-trait-text {
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* Section toggle */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  outline: none;
+  padding: 0 0 var(--sp-xs);
+  margin-bottom: var(--sp-sm);
+}
+.section-chevron {
+  font-size: var(--fs-sm);
+  line-height: 1;
+}
+
+/* Play sheet stat values */
+.ps-stat-val {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: 1.1;
+}
+.ps-combat-row {
+  border: 1px solid var(--border);
+  padding: var(--sp-xs) var(--sp-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+.ps-combat-key {
+  flex: 1;
+}
+.ps-spell-summary {
+  line-height: 1.45;
+  margin-bottom: var(--sp-sm);
+}
