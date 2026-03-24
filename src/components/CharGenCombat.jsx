@@ -1,6 +1,12 @@
-import { SK, SA, mod, modStr, PROF_BONUS } from '../lib/dnd.js'
-import { SL, LK } from './CharGenShared.jsx'
+import { SK, SA, mod, modStr, signStr, PROF_BONUS } from '../lib/dnd.js'
 import { CLASS_WEAPONS } from '../data/weapons.js'
+
+const SL = ({ children }) => <div className="sl">{children}</div>
+const LK = ({ on, toggle }) => (
+  <button className={`lock-btn${on ? ' active' : ''}`} onClick={toggle} title={on ? 'Unlock' : 'Lock'}>
+    <span className="material-symbols-outlined">{on ? 'lock' : 'lock_open'}</span>
+  </button>
+)
 
 export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls, doReroll, rerolls }) {
   return (
@@ -16,9 +22,8 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
         <div className="stat-grid">
           {SK.map(k => {
             const isLocked = !!locked.stats?.[k]
-            const isPri = cfg.pri.includes(k)
             return (
-              <div key={k} className={`stat-cell${isPri ? ' primary' : ''}`}>
+              <div key={k} className="stat-cell">
                 <LK on={isLocked} toggle={() => toggleStatLock(k)} />
                 <div className="stat-key">{SA[k]}</div>
                 <div className="stat-val">{sheet.stats[k]}</div>
@@ -49,14 +54,14 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
         <SL>Combat</SL>
         <div className="grid-3">
           {[
-            { label: 'HP',    value: sheet.maxHp, hp: true },
+            { label: 'HP',    value: sheet.maxHp },
             { label: 'HD',    value: `d${sheet.hd}` },
             { label: 'AC',    value: sheet.ac },
-            { label: 'Init',  value: modStr(sheet.stats.dexterity) },
-            { label: 'Speed', value: '30ft' },
-            { label: 'Prof',  value: `+${PROF_BONUS}` },
-          ].map(({ label, value, hp }) => (
-            <div key={label} className={`stat-row${hp ? ' prof' : ''}`}>
+            { label: 'Init',  value: signStr(sheet.initiative) },
+            { label: 'Speed', value: `${sheet.speed}ft` },
+            { label: 'Prof',  value: `+${sheet.profBonus}` },
+          ].map(({ label, value, hi }) => (
+            <div key={label} className={`stat-row${hi ? ' hi' : ''}`}>
               <span className="row-key">{label}</span>
               <span className="row-val">{value}</span>
             </div>
@@ -66,9 +71,11 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
 
       <div>
         <SL>Starting Weapons</SL>
-        <div className="inv-list">
-          {(CLASS_WEAPONS[cls]?.starting ?? []).map((item, i) => (
-            <div key={i} className="list-row">{item}</div>
+        <div className="skill-inline">
+          {(CLASS_WEAPONS[cls]?.starting ?? []).map((item, i, arr) => (
+            <span key={i} className="skill-inline-item">
+              {item}{i < arr.length - 1 ? ',' : ''}
+            </span>
           ))}
         </div>
       </div>

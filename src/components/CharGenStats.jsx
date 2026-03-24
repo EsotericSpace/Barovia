@@ -1,42 +1,39 @@
 import { SKILLS, skillMod, spellLevelStr } from '../lib/dnd.js'
-import { SL } from './CharGenShared.jsx'
 
-export default function CharGenStats({ sheet, character, cfg, prevSubclass, nextSubclass }) {
+const SL = ({ children }) => <div className="sl">{children}</div>
+
+export default function CharGenStats({ sheet, cls, cfg, prevClass, nextClass, prevSubclass, nextSubclass }) {
   const proficientSkills = SKILLS.filter(s => sheet.profs.includes(s.name))
+  const sc = cfg.subclasses.find(s => s.name === sheet.subclass) ?? cfg.subclasses[0]
 
   return (
     <div className="cg-col">
 
       <div>
-        <SL>Class Features · {character.class} 1</SL>
-        <div className="feature-list">
-          {cfg.features.map(f => (
-            <div key={f.name}>
-              <div className="feature-name">{f.name}</div>
-              <div className="feature-desc">{f.desc}</div>
-            </div>
-          ))}
+        <SL>Class</SL>
+        <div className="bg-block">
+          <div className="bg-nav">
+            <button className="bg-arrow" onClick={prevClass}><span className="material-symbols-outlined">chevron_left</span></button>
+            <span className="bg-name">{cls}</span>
+            <button className="bg-arrow" onClick={nextClass}><span className="material-symbols-outlined">chevron_right</span></button>
+          </div>
+          <div className="class-blurb">{cfg.blurb}</div>
         </div>
       </div>
 
       <div>
         <div className="feature-name">
           Subclass
-          {cfg.subclassLevel === 1 ? ' · Active now' : ` · Takes effect at level ${cfg.subclassLevel}`}
+          {cfg.subclassLevel === 1 ? ' · Active now' : ` (Level ${cfg.subclassLevel})`}
         </div>
-        {(() => {
-          const sc = cfg.subclasses.find(s => s.name === sheet.subclass) ?? cfg.subclasses[0]
-          return (
-            <div className="bg-block">
-              <div className="bg-nav">
-                <button className="bg-arrow" onClick={prevSubclass}><span className="material-symbols-outlined">chevron_left</span></button>
-                <span className="bg-name">{sc.name}</span>
-                <button className="bg-arrow" onClick={nextSubclass}><span className="material-symbols-outlined">chevron_right</span></button>
-              </div>
-              <div className="bg-desc">{sc.desc}</div>
-            </div>
-          )
-        })()}
+        <div className="bg-block">
+          <div className="bg-nav">
+            <button className="bg-arrow" onClick={prevSubclass}><span className="material-symbols-outlined">chevron_left</span></button>
+            <span className="bg-name">{sc.name}</span>
+            <button className="bg-arrow" onClick={nextSubclass}><span className="material-symbols-outlined">chevron_right</span></button>
+          </div>
+          <div className="sc-desc">{sc.desc}</div>
+        </div>
       </div>
 
       <div>

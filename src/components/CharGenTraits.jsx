@@ -1,4 +1,9 @@
-import { SL, Reroll } from './CharGenShared.jsx'
+const SL = ({ children }) => <div className="sl">{children}</div>
+const Reroll = ({ onClick }) => (
+  <button className="reroll-btn" onClick={onClick} title="Reroll">
+    <span className="material-symbols-outlined">refresh</span>
+  </button>
+)
 
 export default function CharGenTraits({ sheet, bg, rerollTrait, prevBackground, nextBackground }) {
   return (
