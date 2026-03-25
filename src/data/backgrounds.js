@@ -50,7 +50,7 @@ export const BACKGROUNDS = {
       "You know how to find the people who exist in the margins. Given time in any settlement, you can identify who knows more than they say and what a favor is worth.",
     profs: ["Deception", "Stealth"],
     equip: [
-      "Crowbar", "Dark clothes with hood", "Gaming dice", "Belt pouch", "15 gp"],
+      "Crowbar", "Thieves' tools", "Dark clothes with hood", "Gaming dice", "Belt pouch", "15 gp"],
     personality: [
       "I always have a plan for when things go wrong.",
       "I am always calm, no matter the situation.",
@@ -179,7 +179,7 @@ export const BACKGROUNDS = {
     featureDesc:
       "Those who look into your eyes can see that you have faced unimaginable horror and that you are no stranger to darkness. Commoners will extend you every courtesy and do their utmost to help you and will even take up arms to fight alongside you, should you find yourself facing an enemy alone.",
     profs: ["Arcana", "Survival"],
-    equip: ["Monster hunter's pack", "A trinket of special significance", "Common clothes", "1 sp"],
+    equip: ["Crowbar", "Hammer", "3 wooden stakes", "Flask of holy water", "Steel mirror", "Manacles", "Tinderbox", "5 torches", "5 days' rations", "A trinket of special significance", "Common clothes", "1 sp"],
     personality: [
       "I don't run from evil. Evil runs from me.",
       "I like to read and memorize poetry. It keeps me calm and brings me fleeting moments of happiness.",
@@ -441,7 +441,7 @@ export const BACKGROUNDS = {
     featureDesc:
       "You know the flow to cities and can find passages through that others would miss. When you are not in combat, you (and companions you lead) can travel between any two locations in the city twice as fast as your speed would normally allow.",
     profs: ["Sleight of Hand", "Stealth"],
-    equip: ["Small knife", "Map of home city", "Token from your parents", "Common clothes", "10 gp"],
+    equip: ["Small knife", "Thieves' tools", "Map of home city", "Token from your parents", "Common clothes", "10 gp"],
     personality: [
       "I hide scraps of food and trinkets away in my pockets.",
       "I ask a lot of questions.",

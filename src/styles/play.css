@@ -386,9 +386,6 @@
 .tarokka-header .event-label {
   color: var(--accent);
 }
-.event-detail {
-  font-style: italic;
-}
 .event-card.levelup .event-detail {
   color: var(--text-tertiary);
 }
@@ -397,7 +394,6 @@
 .event-card.tarokka {
   flex-direction: column;
   gap: var(--sp-sm);
-  min-width: 22rem;
 }
 .tarokka-header {
   display: flex;
@@ -417,22 +413,14 @@
 }
 .tarokka-artifact {
   font-size: var(--fs-xs);
-  color: var(--text-tertiary);
-  padding-top: 1px;
-}
-.tarokka-card-name {
-  font-style: italic;
-  color: var(--text-secondary);
 }
 .tarokka-hint {
   font-size: var(--fs-xs);
   color: var(--text-inactive);
-  font-style: italic;
 }
 .tarokka-location {
   font-size: var(--fs-xs);
   color: var(--accent);
-  margin-top: 1px;
 }
 
 /* Loading */
@@ -564,9 +552,6 @@
   }
   .panel {
     width: 100vw !important;
-  }
-  .ps-close-btn {
-    display: none;
   }
 }
 

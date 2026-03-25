@@ -342,6 +342,14 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
       return
     }
 
+    if (cmd === 'tarot') {
+      if (charRef.current.reading) return
+      const reading = drawReading()
+      onCharacterUpdate(c => ({ ...c, reading }))
+      setMsgs(p => [...p, { role: 'tarokka', id: 'tarokka-test-' + Date.now(), reading }])
+      return
+    }
+
     // Free-text: send to Claude with test system prompt, isolated from campaign history
     setLoading(true)
     try {

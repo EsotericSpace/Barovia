@@ -156,7 +156,8 @@
 }
 /* color */
 .msg-player-inner,
-.monster-type {
+.monster-type,
+.tarokka-artifact {
   color: var(--text-tertiary);
 }
 .ps-trait-text,
@@ -164,6 +165,7 @@
 .ps-spell-summary,
 .monster-action-desc,
 .event-detail,
+.tarokka-card-name,
 .game-over-body {
   color: var(--text-secondary);
 }
@@ -178,6 +180,7 @@
 .condition-fine,
 .condition-btn,
 .feature-name,
+.inv-label,
 .trait-label,
 .ps-trait-label,
 .bg-feature-label,
@@ -270,6 +273,7 @@
 .topbar-exit,
 .lock-btn,
 .reroll-btn,
+.cg-reroll-btn,
 .bg-arrow,
 .settings-btn,
 .settings-close,
@@ -284,7 +288,8 @@
   color: var(--text-tertiary);
 }
 .lock-btn .material-symbols-outlined,
-.reroll-btn .material-symbols-outlined {
+.reroll-btn .material-symbols-outlined,
+.cg-reroll-btn .material-symbols-outlined {
   font-size: var(--icon-size-sm);
 }
 

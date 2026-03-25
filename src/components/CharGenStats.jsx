@@ -24,7 +24,7 @@ export default function CharGenStats({ sheet, cls, cfg, prevClass, nextClass, pr
       <div>
         <div className="feature-name">
           Subclass
-          {cfg.subclassLevel === 1 ? ' · Active now' : ` (Level ${cfg.subclassLevel})`}
+          {cfg.subclassLevel === 1 ? ' — Active' : ` — At Level ${cfg.subclassLevel}`}
         </div>
         <div className="bg-block">
           <div className="bg-nav">

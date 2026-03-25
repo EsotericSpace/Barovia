@@ -1,5 +1,8 @@
 import { SK, SA, mod, modStr, signStr, PROF_BONUS } from '../lib/dnd.js'
 import { CLASS_WEAPONS } from '../data/weapons.js'
+import { TRAIT_ITEMS } from '../lib/chargen.js'
+
+const TRAIT_ITEM_NAMES = new Set(TRAIT_ITEMS.values())
 
 const SL = ({ children }) => <div className="sl">{children}</div>
 const LK = ({ on, toggle }) => (
@@ -15,8 +18,9 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
       <div>
         <div className="cg-scores-header">
           <SL>Ability Scores</SL>
-          <button className="cg-btn cg-reroll rbtn" onClick={doReroll} disabled={rerolls <= 0}>
-            Reroll ({rerolls} left)
+          <button className="cg-reroll-btn" onClick={doReroll} disabled={rerolls <= 0}>
+            <span className="material-symbols-outlined">refresh</span>
+            <span className="cg-reroll-count">({rerolls} rolls left)</span>
           </button>
         </div>
         <div className="stat-grid">
@@ -70,14 +74,33 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
       </div>
 
       <div>
-        <SL>Starting Weapons</SL>
-        <div className="skill-inline">
-          {(CLASS_WEAPONS[cls]?.starting ?? []).map((item, i, arr) => (
-            <span key={i} className="skill-inline-item">
-              {item}{i < arr.length - 1 ? ',' : ''}
-            </span>
-          ))}
+        <SL>Inventory</SL>
+        <div className="inv-group">
+          <span className="inv-label">Items</span>
+          <div className="skill-inline">
+            {sheet.equip.filter(i => !TRAIT_ITEM_NAMES.has(i)).map((item, i, arr) => (
+              <span key={i} className="skill-inline-item">{item}{i < arr.length - 1 ? ',' : ''}</span>
+            ))}
+          </div>
         </div>
+        <div className="inv-group">
+          <span className="inv-label">Weapons</span>
+          <div className="skill-inline">
+            {(CLASS_WEAPONS[cls]?.starting ?? []).map((item, i, arr) => (
+              <span key={i} className="skill-inline-item">{item}{i < arr.length - 1 ? ',' : ''}</span>
+            ))}
+          </div>
+        </div>
+        {sheet.equip.some(i => TRAIT_ITEM_NAMES.has(i)) && (
+          <div className="inv-group">
+            <span className="inv-label">Carried</span>
+            <div className="skill-inline">
+              {sheet.equip.filter(i => TRAIT_ITEM_NAMES.has(i)).map((item, i, arr) => (
+                <span key={i} className="skill-inline-item">{item}{i < arr.length - 1 ? ',' : ''}</span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

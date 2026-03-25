@@ -8,13 +8,37 @@ import {
   migrate, getActiveSlot, persistActiveSlot,
   loadSlot, writeSlot, clearSlot, loadAllSlots,
 } from './lib/saves.js'
+import { CLASS_WEAPONS } from './data/weapons.js'
+
+const MONSTER_HUNTER_PACK = ["Crowbar", "Hammer", "3 wooden stakes", "Flask of holy water", "Steel mirror", "Manacles", "Tinderbox", "5 torches", "5 days' rations"]
+
+function patchCharacter(c) {
+  if (!c) return c
+  let inv = c.inventory ?? []
+  let result = { ...c }
+
+  if (inv.includes("Monster hunter's pack")) {
+    inv = inv.filter(i => i !== "Monster hunter's pack")
+    const missing = MONSTER_HUNTER_PACK.filter(i => !inv.includes(i))
+    inv = [...inv, ...missing]
+    result = { ...result, inventory: inv }
+  }
+
+  if (!result.startingWeapons) {
+    const weapons = CLASS_WEAPONS[c.class]?.starting ?? []
+    const missing = weapons.filter(w => !inv.includes(w))
+    result = { ...result, startingWeapons: weapons, inventory: [...inv, ...missing] }
+  }
+
+  return result
+}
 
 migrate()
 
 export default function App() {
   const [activeSlot, setActiveSlot] = useState(() => getActiveSlot())
   const [phase, setPhase]           = useState(() => loadSlot(getActiveSlot())?.phase ?? 'landing')
-  const [character, setCharacter]   = useState(() => loadSlot(getActiveSlot())?.character ?? null)
+  const [character, setCharacter]   = useState(() => patchCharacter(loadSlot(getActiveSlot())?.character ?? null))
   const [savesModal, setSavesModal]  = useState(false)
   const { volume, setVolume, muted, toggleMute, startAudio } = useMusic(!!(character?.activeMonster))
   const audioProps = { volume, setVolume, muted, toggleMute }
@@ -29,7 +53,7 @@ export default function App() {
     if (startNew) clearSlot(slot)
     setActiveSlot(slot)
     persistActiveSlot(slot)
-    setCharacter(saved?.character ?? null)
+    setCharacter(patchCharacter(saved?.character ?? null))
     setPhase(saved && !startNew ? 'play' : 'chargen')
   }
 
@@ -68,7 +92,7 @@ export default function App() {
           setCharacter({
             ...sheet,
             hp: sheet.maxHp,
-            inventory: [...sheet.equip],
+            inventory: [...sheet.equip, ...sheet.startingWeapons],
             activeMonster: null,
             conditions: [],
             level: 1,

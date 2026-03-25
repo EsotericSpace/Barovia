@@ -125,7 +125,7 @@
 .bg-block,
 .ps-bg-block {
   border: 1px solid var(--border);
-  padding: var(--sp-sm);
+  padding: var(--sp-md);
 }
 .bg-divider,
 .ps-divider {
@@ -210,7 +210,6 @@
 }
 .ps-trait-text {
   line-height: 1.45;
-  font-style: italic;
 }
 
 /* Section toggle */

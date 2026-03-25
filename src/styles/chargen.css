@@ -13,6 +13,12 @@
   margin: 0 auto;
   padding: var(--sp-lg);
 }
+.inv-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-sm);
+}
 .cg-col {
   display: flex;
   flex-direction: column;
@@ -20,7 +26,7 @@
 }
 .cg-scores-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: var(--sp-sm);
 }
@@ -109,7 +115,10 @@
   font-weight: 400;
   letter-spacing: normal;
   text-transform: none;
-  color: var(--text-inactive);
+  color: var(--mist-color, var(--text-secondary));
+}
+.cg-name-input:focus::placeholder {
+  color: transparent;
 }
 .cg-identity,
 .ps-identity {
@@ -150,12 +159,27 @@
   color: var(--accent);
   opacity: 1;
 }
-.reroll-btn {
+.reroll-btn,
+.cg-reroll-btn {
   color: var(--text-tertiary);
   transition: color var(--dur-base);
 }
-.reroll-btn:hover {
+.reroll-btn:hover,
+.cg-reroll-btn:hover:not(:disabled) {
   color: var(--text-secondary);
+}
+.cg-reroll-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.cg-reroll-btn:disabled {
+  color: var(--text-inactive);
+  cursor: default;
+}
+.cg-reroll-count {
+  font-size: var(--fs-xs);
+  font-family: var(--font-display);
 }
 
 /* Tabs */
@@ -205,6 +229,10 @@
     padding: var(--sp-lg) !important;
     margin-bottom: 0 !important;
   }
+  .cg-identity {
+    font-size: 0.67rem;
+    line-height: 1.3;
+  }
   .cg-tab-bar {
     display: grid;
     flex-shrink: 0;
@@ -216,6 +244,13 @@
     text-align: center;
   }
   .cg-tab-label {
+    font-size: 0.6rem;
+  }
+  .cg-tab-label[data-mobile] {
+    font-size: 0;
+  }
+  .cg-tab-label[data-mobile]::after {
+    content: attr(data-mobile);
     font-size: 0.6rem;
   }
   .cg-content {

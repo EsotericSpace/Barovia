@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
+const AMBIENT_PLAYLIST = ['/ambient.mp3', '/filler.mp3', '/ambient-2.mp3', '/filler-2.mp3']
+
 const FADE_MS = 1500
 const TICK_MS = 50
 const STEPS = FADE_MS / TICK_MS
@@ -13,19 +15,25 @@ function loadVolume() {
 }
 
 export function useMusic(combatActive) {
-  const ambientRef    = useRef(null)
-  const combatRef     = useRef(null)
-  const fadeRef       = useRef(null)
-  const mountedRef    = useRef(false)
-  const baseVolumeRef = useRef(loadVolume())
+  const ambientRef      = useRef(null)
+  const combatRef       = useRef(null)
+  const fadeRef         = useRef(null)
+  const mountedRef      = useRef(false)
+  const playlistIdxRef  = useRef(0)
+  const baseVolumeRef   = useRef(loadVolume())
   const [muted, setMuted]        = useState(false)
   const [volume, setVolumeState] = useState(baseVolumeRef.current)
 
   useEffect(() => {
-    const ambient = new Audio('/ambient.mp3')
+    const ambient = new Audio(AMBIENT_PLAYLIST[0])
     const combat  = new Audio('/combat.mp3')
-    ambient.loop = true
     combat.loop  = true
+
+    ambient.addEventListener('ended', () => {
+      playlistIdxRef.current = (playlistIdxRef.current + 1) % AMBIENT_PLAYLIST.length
+      ambient.src = AMBIENT_PLAYLIST[playlistIdxRef.current]
+      ambient.play().catch(() => {})
+    })
     ambient.volume = baseVolumeRef.current
     combat.volume  = 0
     ambientRef.current = ambient

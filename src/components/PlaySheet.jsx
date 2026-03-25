@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { SK, SA, mod, modStr, SKILLS, PROF_BONUS, skillMod, spellLevelStr } from '../lib/dnd.js'
 import { CLASS_CONFIG } from '../data/classes.js'
 import { CONDITIONS } from '../data/conditions.js'
+import { SUBCLASS_SHORT, BACKGROUND_SHORT, TRAIT_ITEMS } from '../lib/chargen.js'
+
+const TRAIT_ITEM_NAMES = new Set(TRAIT_ITEMS.values())
 
 function Section({ label, open, onToggle, children }) {
   return (
@@ -20,7 +23,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
   const [open, setOpen] = useState(() => {
     try {
       const saved = localStorage.getItem('barovia_sheet_sections')
-      return saved ? JSON.parse(saved) : { background: true, traits: false, skills: false, inventory: false }
+      return saved ? JSON.parse(saved) : { background: false, traits: false, skills: false, inventory: true }
     } catch { return { background: true, traits: false, skills: false, inventory: false } }
   })
   const toggle = key => setOpen(o => {
@@ -51,7 +54,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
         </div>
         <div className="cg-header-center">
           <div className="cg-name">{character.name}</div>
-          <div className="cg-identity">{character.subclass} {character.class} · Lv {character.level ?? 1} · {character.background}</div>
+          <div className="cg-identity">The {BACKGROUND_SHORT[character.background] ?? character.background} {SUBCLASS_SHORT[character.subclass] ?? character.subclass} {character.class}</div>
         </div>
         <div className="cg-header-right" />
       </div>
@@ -73,16 +76,54 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
         {tab === 'identity' && (
           <div className="cg-col">
 
-            <Section label="Background" open={open.background} onToggle={() => toggle('background')}>
-              <div className="ps-bg-block">
-                <div className="ps-bg-name">{character.background}</div>
-                {bg && <>
-                  <div className="ps-bg-desc">{bg.desc}</div>
-                  <div className="ps-divider" />
-                  <div className="ps-feature-label">Feature · {bg.feature}</div>
-                  <div className="ps-feature-desc">{bg.featureDesc}</div>
-                </>}
-              </div>
+            <Section label="Inventory" open={open.inventory} onToggle={() => toggle('inventory')}>
+              {character.inventory.length === 0
+                ? <div className="ps-inv-empty">Empty</div>
+                : (() => {
+                    const weaponSet = new Set(character.startingWeapons ?? [])
+                    const items    = character.inventory.filter(i => !weaponSet.has(i) && !TRAIT_ITEM_NAMES.has(i))
+                    const weapons  = character.inventory.filter(i => weaponSet.has(i))
+                    const carried  = character.inventory.filter(i => TRAIT_ITEM_NAMES.has(i))
+                    return <>
+                      {items.length > 0 && (
+                        <div className="inv-group">
+                          <span className="inv-label">Items</span>
+                          <div className="skill-inline">
+                            {items.map((item, i, arr) => (
+                              <span key={i} className={`skill-inline-item${/\d+\s*gp/i.test(item) ? ' gold' : ''}`}>
+                                {item}{i < arr.length - 1 ? ',' : ''}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {weapons.length > 0 && (
+                        <div className="inv-group">
+                          <span className="inv-label">Weapons</span>
+                          <div className="skill-inline">
+                            {weapons.map((item, i, arr) => (
+                              <span key={i} className="skill-inline-item">
+                                {item}{i < arr.length - 1 ? ',' : ''}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {carried.length > 0 && (
+                        <div className="inv-group">
+                          <span className="inv-label">Carried</span>
+                          <div className="skill-inline">
+                            {carried.map((item, i, arr) => (
+                              <span key={i} className="skill-inline-item">
+                                {item}{i < arr.length - 1 ? ',' : ''}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  })()
+              }
             </Section>
 
             <Section label="Character Traits" open={open.traits} onToggle={() => toggle('traits')}>
@@ -97,32 +138,30 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
             </Section>
 
             <Section label="Skills" open={open.skills} onToggle={() => toggle('skills')}>
-              <div className="ps-skill-rows">
-                {SKILLS.filter(s => profLevel(s.name) > 0).map(s => {
+              <div className="skill-inline">
+                {SKILLS.filter(s => profLevel(s.name) > 0).map((s, i, arr) => {
                   const expert = profLevel(s.name) === 2
                   const val = skillMod(s.name, character.stats, allProfs, expertise)
+                  const valStr = val >= 0 ? `+${val}` : `${val}`
                   return (
-                    <span key={s.name} className={`list-row${expert ? ' expert' : ''}`}>
-                      <span className="ps-skill-name">{s.name}{expert ? ' ★' : ''}</span>
-                      <span className="ps-skill-val">{val >= 0 ? `+${val}` : `${val}`}</span>
+                    <span key={s.name} className={`skill-inline-item${expert ? ' expert' : ''}`}>
+                      {s.name} ({valStr}){expert ? ' ★' : ''}{i < arr.length - 1 ? ',' : ''}
                     </span>
                   )
                 })}
               </div>
             </Section>
 
-            <Section label="Inventory" open={open.inventory} onToggle={() => toggle('inventory')}>
-              {character.inventory.length === 0
-                ? <div className="ps-inv-empty">Empty</div>
-                : <div className="ps-inv-rows">
-                    {character.inventory.map((item, i) => {
-                      const isGold = /\d+\s*gp/i.test(item)
-                      return (
-                        <div key={i} className={`list-row${isGold ? ' gold' : ''}`}>{item}</div>
-                      )
-                    })}
-                  </div>
-              }
+            <Section label="Background" open={open.background} onToggle={() => toggle('background')}>
+              <div className="ps-bg-block">
+                <div className="ps-bg-name">{character.background}</div>
+                {bg && <>
+                  <div className="ps-bg-desc">{bg.desc}</div>
+                  <div className="ps-divider" />
+                  <div className="ps-feature-label">Feature · {bg.feature}</div>
+                  <div className="ps-feature-desc">{bg.featureDesc}</div>
+                </>}
+              </div>
             </Section>
 
           </div>

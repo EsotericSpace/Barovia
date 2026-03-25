@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { CLASSES, CLASS_CONFIG } from '../data/classes.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SK, mod } from '../lib/dnd.js'
-import { generateSheet, pick, calcAC } from '../lib/chargen.js'
+import { generateSheet, pick, calcAC, TRAIT_ITEMS, SUBCLASS_SHORT, BACKGROUND_SHORT } from '../lib/chargen.js'
 import { SPELL_ASSIGNMENTS, applySubclassSpells } from '../data/spells.js'
 import { SLOT_TABLE } from '../data/levelup.js'
 import CharGenStats from './CharGenStats.jsx'
 import CharGenCombat from './CharGenCombat.jsx'
 import CharGenTraits from './CharGenTraits.jsx'
+
 
 export default function CharGen({ initialName = '', initialClass = CLASSES[0], onComplete, onBack, settingsSlot }) {
   const [name, setName] = useState(initialName)
@@ -21,14 +22,38 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
   const [rerolls, setRerolls] = useState(3)
   const [activeTab, setActiveTab] = useState('story')
   const nameRef = useRef(null)
+  const mistRef = useRef(null)
 
   useEffect(() => {
     const el = nameRef.current
     if (!el) return
     el.style.fontSize = ''
-    if (el.scrollWidth > el.clientWidth) {                                                                          
-      const base = parseFloat(getComputedStyle(el).fontSize)                                                 
-      el.style.fontSize = Math.max(12, base * el.clientWidth / el.scrollWidth) + 'px' 
+    if (el.scrollWidth > el.clientWidth) {
+      const base = parseFloat(getComputedStyle(el).fontSize)
+      el.style.fontSize = Math.max(12, base * el.clientWidth / el.scrollWidth) + 'px'
+    }
+  }, [name])
+
+  useEffect(() => {
+    if (name) return
+    const el = nameRef.current
+    if (!el) return
+    const period = 3500
+    let start = null
+    let frame
+    function tick(ts) {
+      if (!start) start = ts
+      const t = ((ts - start) % period) / period
+      const wave = 0.5 - 0.5 * Math.cos(2 * Math.PI * t)       // smooth 0→1→0
+      const s = wave * wave * (3 - 2 * wave)                    // smoothstep: sharpens S-curve
+      const opacity = 1 - 0.7 * s
+      el.style.setProperty('--mist-color', `rgba(171,160,156,${opacity.toFixed(3)})`)
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(frame)
+      el.style.removeProperty('--mist-color')
     }
   }, [name])
 
@@ -80,7 +105,15 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
     const bg = BACKGROUNDS[sheet.background]
     const pool = bg[key].filter(v => v !== sheet[key])
     if (!pool.length) return
-    setSheet(prev => ({ ...prev, [key]: pick(pool) }))
+    setSheet(prev => {
+      const newTrait = pick(pool)
+      const oldItem = TRAIT_ITEMS.get(prev[key])
+      const newItem = TRAIT_ITEMS.get(newTrait)
+      let equip = prev.equip
+      if (oldItem) equip = equip.filter(i => i !== oldItem)
+      if (newItem) equip = [...equip, newItem]
+      return { ...prev, [key]: newTrait, equip }
+    })
   }
 
   const bgKeys = Object.keys(BACKGROUNDS)
@@ -95,11 +128,15 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
       const finalSpells = baseSpells
         ? applySubclassSpells(cls, prev.subclass, baseSpells.cantrips, baseSpells.spells)
         : null
+      const personality = pick(bg.personality)
+      const ideal = pick(bg.ideal)
+      const bond = pick(bg.bond)
+      const flaw = pick(bg.flaw)
+      const traitEquip = [personality, ideal, bond, flaw].flatMap(t => TRAIT_ITEMS.has(t) ? [TRAIT_ITEMS.get(t)] : [])
       return {
         ...prev,
-        background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip],
-        personality: pick(bg.personality), ideal: pick(bg.ideal),
-        bond: pick(bg.bond), flaw: pick(bg.flaw),
+        background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip, ...traitEquip],
+        personality, ideal, bond, flaw,
         cantrips: finalSpells?.cantrips ?? prev.cantrips,
         spellsKnown: finalSpells?.spells.map(n => ({ name: n, level: 1 })) ?? prev.spellsKnown,
         spellSlots: SLOT_TABLE[cls] ? SLOT_TABLE[cls][0].map(s => ({ ...s, used: 0 })) : prev.spellSlots,
@@ -139,7 +176,7 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
                 className="cg-name-input"
               />
             </div>
-            <div className="cg-identity">{sheet.subclass} {cls} · {sheet.background}</div>
+            <div className="cg-identity">The {BACKGROUND_SHORT[sheet.background] ?? sheet.background} {SUBCLASS_SHORT[sheet.subclass] ?? sheet.subclass} {cls}</div>
           </div>
           <div className="cg-header-right">
             <button
@@ -154,9 +191,9 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
         </div>
 
         <div className="cg-tab-bar">
-          {[['story', 'Background'], ['class', 'Class'], ['scores', 'Scores']].map(([id, label]) => (
+          {[['story', 'Background'], ['class', 'Class'], ['scores', 'Scores', 'Stats']].map(([id, label, mobileLabel]) => (
             <button key={id} className={`cg-tab${activeTab === id ? ' active' : ''}`} onClick={() => setActiveTab(id)}>
-              <span className="cg-tab-label">{label}</span>
+              <span className="cg-tab-label" data-mobile={mobileLabel ?? label}>{label}</span>
             </button>
           ))}
         </div>
