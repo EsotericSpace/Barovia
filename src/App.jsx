@@ -9,6 +9,8 @@ import {
   loadSlot, writeSlot, clearSlot, loadAllSlots,
 } from './lib/saves.js'
 import { CLASS_WEAPONS } from './data/weapons.js'
+import { getClassFeatureMax, CLASS_CONFIG } from './data/classes.js'
+import { drawReading } from './data/tarokka.js'
 
 const MONSTER_HUNTER_PACK = ["Crowbar", "Hammer", "3 wooden stakes", "Flask of holy water", "Steel mirror", "Manacles", "Tinderbox", "5 torches", "5 days' rations"]
 
@@ -28,6 +30,14 @@ function patchCharacter(c) {
     const weapons = CLASS_WEAPONS[c.class]?.starting ?? []
     const missing = weapons.filter(w => !inv.includes(w))
     result = { ...result, startingWeapons: weapons, inventory: [...inv, ...missing] }
+  }
+
+  if (!result.stProfs) {
+    result = { ...result, stProfs: CLASS_CONFIG[c.class]?.stProfs ?? [] }
+  }
+
+  if (!result.classFeatures) {
+    result = { ...result, classFeatures: getClassFeatureMax(result.class, result.stats, result.level ?? 1) }
   }
 
   return result
@@ -60,8 +70,11 @@ export default function App() {
   function newGame() {
     const slots = loadAllSlots()
     const emptyIdx = slots.findIndex(s => s === null)
-    const target = emptyIdx >= 0 ? emptyIdx : 0
-    switchSlot(target, true)
+    if (emptyIdx >= 0) {
+      switchSlot(emptyIdx, true)
+    } else {
+      setSavesModal(true)
+    }
   }
 
   const settingsProps = {
@@ -99,6 +112,9 @@ export default function App() {
             milestones: [],
             currentLocation: null,
             deathSaves: { successes: 0, failures: 0 },
+            day: 1,
+            reading: { ...drawReading(), readingDay: 1, revealed: false },
+            classFeatures: getClassFeatureMax(sheet.class, sheet.stats, 1),
           })
           setPhase('play')
         }}
@@ -108,6 +124,7 @@ export default function App() {
     )
     return (
       <Play
+        key={activeSlot}
         character={character}
         slotIndex={activeSlot}
         onCharacterUpdate={updater => {

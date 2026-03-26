@@ -1,44 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { parseTags } from '../lib/parseTags.js'
-import { buildSystemPrompt, buildTestPrompt } from '../lib/systemPrompt.js'
+import { buildSystemPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
-import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
-import { LOCATIONS } from '../data/locations/index.js'
-import { drawReading } from '../data/tarokka.js'
-import { mod, SA } from '../lib/dnd.js'
+import { SA, SKILL_MAP, rollWithAdv } from '../lib/dnd.js'
+import { createApplyTags } from '../lib/applyTags.js'
+import { createTestCommandHandler } from '../lib/testCommands.js'
 import PlayMessages from './PlayMessages.jsx'
 import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
-import { CONDITIONS } from '../data/conditions.js'
 import { loadMsgs, writeMsgs } from '../lib/saves.js'
-
-const SKILL_MAP = {
-  athletics: 'strength',
-  acrobatics: 'dexterity', sleight_of_hand: 'dexterity', stealth: 'dexterity',
-  arcana: 'intelligence', history: 'intelligence', investigation: 'intelligence', nature: 'intelligence', religion: 'intelligence',
-  animal_handling: 'wisdom', insight: 'wisdom', medicine: 'wisdom', perception: 'wisdom', survival: 'wisdom',
-  deception: 'charisma', intimidation: 'charisma', performance: 'charisma', persuasion: 'charisma',
-  strength: 'strength', dexterity: 'dexterity', constitution: 'constitution',
-  intelligence: 'intelligence', wisdom: 'wisdom', charisma: 'charisma', attack: 'strength',
-}
-
-function rollD20() { return Math.floor(Math.random() * 20) + 1 }
-
-const MILESTONE_MAP = Object.fromEntries(
-  Object.values(LOCATIONS).flatMap(loc =>
-    (loc.levelTriggers ?? []).map(t => [t.milestone, t.level])
-  )
-)
-const MILESTONE_CONDITIONS = Object.fromEntries(
-  Object.values(LOCATIONS).flatMap(loc =>
-    (loc.levelTriggers ?? []).map(t => [t.milestone, t.condition])
-  )
-)
-const MILESTONE_LOCATIONS = Object.fromEntries(
-  Object.values(LOCATIONS).flatMap(loc =>
-    (loc.levelTriggers ?? []).map(t => [t.milestone, loc.id])
-  )
-)
 
 export default function Play({ character, slotIndex, onCharacterUpdate, onExit }) {
   const saved = loadMsgs(slotIndex ?? 0)
@@ -47,6 +17,7 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
   const [loading, setLoading] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [gameOver, setGameOver] = useState(false)
+  const [victory, setVictory] = useState(false)
   const histRef   = useRef(saved?.history ?? [])
   const sysRef    = useRef('')
   const latestRef = useRef(null)
@@ -61,7 +32,7 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
   useEffect(() => { latestRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [msgs, loading])
   useEffect(() => {
     if (msgs.length > 0) writeMsgs(slotIndex, msgs, histRef.current)
-  }, [msgs, slotIndex])
+  }, [msgs]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     function handleBeforeUnload() {
       if (msgsRef.current.length > 0) writeMsgs(slotRef.current, msgsRef.current, histRef.current)
@@ -69,6 +40,9 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
+
+  const applyTags = createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVictory })
+  const handleTestCommand = createTestCommandHandler({ charRef, onCharacterUpdate, setMsgs, setLoading, applyTags })
 
   useEffect(() => {
     if (saved?.display?.length) return
@@ -98,164 +72,23 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     return parseTags(d.content)
   }
 
-  function applyTags(tags, buf) {
-    const SA = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT', wisdom: 'WIS', charisma: 'CHA' }
-    tags.forEach(t => {
-      if (t.type === 'monster') {
-        fetch(`https://www.dnd5eapi.co/api/monsters/${t.slug}`)
-          .then(r => r.ok ? r.json() : null)
-          .then(d => { if (d) onCharacterUpdate(c => ({ ...c, activeMonster: d })) })
-          .catch(() => {})
-      }
-      if (t.type === 'endcombat') {
-        onCharacterUpdate(c => ({ ...c, activeMonster: null }))
-      }
-      if (t.type === 'item') {
-        const add = t.val.startsWith('+')
-        const raw = t.val.slice(1).trim()
-        const item = raw.charAt(0).toUpperCase() + raw.slice(1)
-        onCharacterUpdate(c => ({
-          ...c, inventory: add
-            ? c.inventory.some(i => i.toLowerCase() === item.toLowerCase()) ? c.inventory : [...c.inventory, item]
-            : c.inventory.filter(i => i.toLowerCase() !== item.toLowerCase()),
-        }))
-      }
-      if (t.type === 'hp') onCharacterUpdate(c => {
-        const wasAtZero = c.hp === 0
-        const next = { ...c, hp: t.val }
-        if (wasAtZero && t.val > 0) next.deathSaves = { successes: 0, failures: 0 }
-        return next
-      })
-      if (t.type === 'spelllearn') onCharacterUpdate(c => ({
-        ...c, spellsKnown: [...(c.spellsKnown ?? []), { name: t.name, level: t.level }],
-      }))
-      if (t.type === 'spellslot') onCharacterUpdate(c => {
-        if (!Array.isArray(c.spellSlots)) return c
-        const tierIdx = c.spellSlots.findIndex(s => s.level === t.level && s.used < s.total)
-        if (tierIdx === -1) return c
-        const slots = c.spellSlots.map((s, i) => i === tierIdx ? { ...s, used: s.used + 1 } : s)
-        return { ...c, spellSlots: slots }
-      })
-      if (t.type === 'tarokka') {
-        if (charRef.current.reading) return
-        const reading = drawReading()
-        onCharacterUpdate(c => ({ ...c, reading }))
-        buf.push({ role: 'tarokka', id: 'tarokka-' + Date.now(), reading })
-      }
-      if (t.type === 'location') {
-        onCharacterUpdate(c => ({ ...c, currentLocation: t.slug }))
-      }
-      if (t.type === 'milestone') {
-        const already = (charRef.current.milestones ?? []).includes(t.slug)
-        if (already) return
-        const expectedLoc = MILESTONE_LOCATIONS[t.slug]
-        const currentLoc = charRef.current.currentLocation
-        if (expectedLoc && currentLoc && currentLoc !== expectedLoc) return
-        onCharacterUpdate(c => ({ ...c, milestones: [...(c.milestones ?? []), t.slug] }))
-        const newLevel = MILESTONE_MAP[t.slug]
-        if (!newLevel || newLevel !== (charRef.current.level ?? 1) + 1) return
-        onCharacterUpdate(c => {
-          const hdAvg = HD_AVG[c.class] ?? 5
-          const hpIncrease = hdAvg + mod(c.stats.constitution)
-          const newMaxHp = c.maxHp + hpIncrease
-          const tierDefs = SLOT_TABLE[c.class]?.[newLevel - 1]
-          const newSpellSlots = tierDefs
-            ? tierDefs.map(def => {
-                const existing = Array.isArray(c.spellSlots) ? c.spellSlots.find(s => s.level === def.level) : null
-                return { ...def, used: existing?.used ?? 0 }
-              })
-            : c.spellSlots
-          return {
-            ...c,
-            level: newLevel,
-            maxHp: newMaxHp,
-            hp: Math.min(c.hp + hpIncrease, newMaxHp),
-            profBonus: profBonus(newLevel),
-            spellSlots: newSpellSlots,
-          }
-        })
-        buf.push({ role: 'levelup', id: 'lu-' + Date.now(), level: newLevel, condition: MILESTONE_CONDITIONS[t.slug] })
-      }
-      if (t.type === 'shortrest') {
-        const c = charRef.current
-        const hdAvg = HD_AVG[c.class] ?? 5
-        const hpGain = hdAvg + mod(c.stats.constitution)
-        const newHp = Math.min(c.hp + Math.max(1, hpGain), c.maxHp)
-        const isWarlock = SHORT_REST_CASTERS.has(c.class)
-        onCharacterUpdate(ch => ({
-          ...ch,
-          hp: newHp,
-          spellSlots: isWarlock && Array.isArray(ch.spellSlots)
-            ? ch.spellSlots.map(s => ({ ...s, used: 0 }))
-            : ch.spellSlots,
-        }))
-        buf.push({ role: 'rest', id: 'sr-' + Date.now(), short: true, hpGain: newHp - c.hp })
-      }
-      if (t.type === 'longrest') {
-        onCharacterUpdate(c => ({
-          ...c,
-          hp: c.maxHp,
-          spellSlots: Array.isArray(c.spellSlots) ? c.spellSlots.map(s => ({ ...s, used: 0 })) : c.spellSlots,
-        }))
-        buf.push({ role: 'rest', id: 'lr-' + Date.now(), short: false })
-      }
-      if (t.type === 'deathsave') onCharacterUpdate(c => {
-        const ds = c.deathSaves ?? { successes: 0, failures: 0 }
-        return t.success
-          ? { ...c, deathSaves: { ...ds, successes: ds.successes + 1 } }
-          : { ...c, deathSaves: { ...ds, failures: ds.failures + 1 } }
-      })
-      if (t.type === 'dead') setGameOver(true)
-      if (t.type === 'condition') {
-        const add = t.val.startsWith('+')
-        const key = t.val.slice(1).toLowerCase()
-        onCharacterUpdate(c => ({
-          ...c,
-          conditions: add
-            ? [...new Set([...(c.conditions ?? []), key])]
-            : (c.conditions ?? []).filter(k => k !== key),
-        }))
-      }
-      if (t.type === 'rollprompt') {
-        const ability = SKILL_MAP[t.skill] || 'strength'
-        const modifier = mod(charRef.current.stats[ability] || 10)
-        buf.push({
-          role: 'rollprompt', id: 'rp-' + Date.now() + Math.random(),
-          skill: t.skill.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-          rawSkill: t.skill,
-          ability: SA[ability] || ability.toUpperCase(),
-          modifier,
-        })
-      }
-      if (t.type === 'roll') {
-        const ability = SKILL_MAP[t.skill] || 'strength'
-        const modifier = mod(charRef.current.stats[ability] || 10)
-        const d20 = rollD20()
-        const total = d20 + modifier
-        buf.unshift({
-          role: 'roll', id: 'roll-' + Date.now() + Math.random(),
-          d20, modifier, total, dc: t.dc,
-          skill: t.skill.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-          ability: SA[ability] || ability.toUpperCase(),
-          success: total >= t.dc,
-        })
-      }
-    })
-  }
-
   async function handleRollPrompt(msg) {
     if (loading) return
-    const d20 = rollD20()
-    const total = d20 + msg.modifier
+    const { kept, dropped } = rollWithAdv(msg.adv)
+    const total = kept + msg.modifier
     const rollMsg = {
       role: 'roll', id: 'roll-' + Date.now(),
-      d20, modifier: msg.modifier, total, dc: null, skill: msg.skill,
+      d20: kept, dropped, adv: msg.adv,
+      modifier: msg.modifier, total, dc: null, skill: msg.skill,
       ability: msg.ability, success: null,
+      proficient: msg.proficient, expert: msg.expert,
     }
     setMsgs(p => p.map(m => m.id === msg.id ? rollMsg : m))
     setLoading(true)
     sysRef.current = buildSystemPrompt(charRef.current)
-    const resultText = `[Player roll: ${msg.skill} — d20(${d20})${msg.modifier >= 0 ? '+' : ''}${msg.modifier} = ${total}]`
+    const advLabel = msg.adv === 'adv' ? ' (advantage)' : msg.adv === 'dis' ? ' (disadvantage)' : ''
+    const diceStr = dropped != null ? `d20(${kept}, dropped:${dropped})` : `d20(${kept})`
+    const resultText = `[Player roll: ${msg.skill} — ${diceStr}${msg.modifier >= 0 ? '+' : ''}${msg.modifier} = ${total}${advLabel}]`
     const newHist = [...histRef.current, { role: 'user', content: resultText }]
     try {
       const { text, tags } = await callDM(newHist)
@@ -265,110 +98,6 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
       setMsgs(p => [...p, ...buf])
     } catch {
       setMsgs(p => [...p, { role: 'assistant', content: '(Connection failed.)', id: 'e' + Date.now() }])
-    }
-    setLoading(false)
-  }
-
-  async function handleTestCommand(raw) {
-    const args = raw.slice('/test'.length).trim()
-    const parts = args.split(/\s+/)
-    const cmd = parts[0]?.toLowerCase()
-
-    if (cmd === 'rollprompt') {
-      const skillRaw = parts.slice(1).join('_').toLowerCase() || 'perception'
-      const ability = SKILL_MAP[skillRaw] || 'wisdom'
-      setMsgs(p => [...p, {
-        role: 'rollprompt', id: 'rp-test-' + Date.now(),
-        skill: skillRaw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        rawSkill: skillRaw, ability: SA[ability] || ability.toUpperCase(),
-        modifier: mod(charRef.current.stats[ability] || 10),
-      }])
-      return
-    }
-
-    if (cmd === 'roll') {
-      const skillRaw = parts[1]?.toLowerCase() || 'perception'
-      const total = parseInt(parts[2]) || 14
-      const dc = parts[3] ? parseInt(parts[3]) : null
-      const ability = SKILL_MAP[skillRaw] || 'wisdom'
-      const modifier = mod(charRef.current.stats[ability] || 10)
-      const d20 = Math.max(1, Math.min(20, total - modifier))
-      setMsgs(p => [...p, {
-        role: 'roll', id: 'roll-test-' + Date.now(),
-        d20, modifier, total, dc,
-        skill: skillRaw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        ability: SA[ability] || ability.toUpperCase(),
-        success: dc != null ? total >= dc : null,
-      }])
-      return
-    }
-
-    if (cmd === 'rest') {
-      const short = parts[1] !== 'long'
-      const hpGain = short ? Math.max(1, Math.floor((charRef.current.maxHp - charRef.current.hp) / 2)) : 0
-      setMsgs(p => [...p, { role: 'rest', id: 'rest-test-' + Date.now(), short, hpGain }])
-      return
-    }
-
-    if (cmd === 'levelup') {
-      const level = parseInt(parts[1]) || (charRef.current.level ?? 1) + 1
-      onCharacterUpdate(c => {
-        const hdAvg = HD_AVG[c.class] ?? 5
-        const hpIncrease = hdAvg + mod(c.stats.constitution)
-        const newMaxHp = c.maxHp + hpIncrease
-        const tierDefs = SLOT_TABLE[c.class]?.[level - 1]
-        const newSpellSlots = tierDefs
-          ? tierDefs.map(def => {
-              const existing = Array.isArray(c.spellSlots) ? c.spellSlots.find(s => s.level === def.level) : null
-              return { ...def, used: existing?.used ?? 0 }
-            })
-          : c.spellSlots
-        return {
-          ...c,
-          level,
-          maxHp: newMaxHp,
-          hp: Math.min(c.hp + hpIncrease, newMaxHp),
-          profBonus: profBonus(level),
-          spellSlots: newSpellSlots,
-        }
-      })
-      setMsgs(p => [...p, { role: 'levelup', id: 'lu-test-' + Date.now(), level }])
-      return
-    }
-
-    if (cmd === 'hp') {
-      const val = parseInt(parts[1])
-      if (!isNaN(val)) onCharacterUpdate(c => ({ ...c, hp: Math.max(0, Math.min(c.maxHp, val)) }))
-      return
-    }
-
-    if (cmd === 'tarot') {
-      if (charRef.current.reading) return
-      const reading = drawReading()
-      onCharacterUpdate(c => ({ ...c, reading }))
-      setMsgs(p => [...p, { role: 'tarokka', id: 'tarokka-test-' + Date.now(), reading }])
-      return
-    }
-
-    // Free-text: send to Claude with test system prompt, isolated from campaign history
-    setLoading(true)
-    try {
-      const r = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: buildTestPrompt(charRef.current),
-          messages: [{ role: 'user', content: args }],
-        }),
-      })
-      const d = await r.json()
-      if (d.error) throw new Error(d.error)
-      const { text, tags } = parseTags(d.content)
-      const buf = [{ role: 'assistant', content: text || '*(no narrative)*', id: 'test-' + Date.now() }]
-      applyTags(tags, buf)
-      setMsgs(p => [...p, ...buf])
-    } catch {
-      setMsgs(p => [...p, { role: 'assistant', content: '*(Test failed — check console)*', id: 'e' + Date.now() }])
     }
     setLoading(false)
   }
@@ -409,11 +138,6 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  const isDying = character.hp === 0
-  const hpPct = character.hp / (character.maxHp || 1)
-  const hpState = isDying ? 'dying' : hpPct <= 0.25 ? 'danger' : hpPct <= 0.5 ? 'hurt' : 'healthy'
-  const deathSaves = character.deathSaves ?? { successes: 0, failures: 0 }
-  const showDeathSaves = isDying && (character.level ?? 1) >= 3
   const bg = BACKGROUNDS[character.background]
 
   return (
@@ -440,6 +164,20 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
           <div className="game-over-title">You have died.</div>
           <div className="game-over-body">Barovia claims another soul.</div>
           <button className="game-over-return ebtn" onClick={onExit}>Return to Barovia</button>
+        </div>
+      )}
+
+      {victory && (
+        <div className="game-over-overlay victory">
+          <div className="game-over-label">Campaign Complete</div>
+          <div className="game-over-title">The Mists Part.</div>
+          <div className="game-over-body">
+            Sunlight touches Barovia for the first time in four centuries. The Barovians who carry souls gather in the streets and weep without knowing why — only that something ancient and terrible has finally let go.
+          </div>
+          <div className="game-over-body">
+            Count Strahd von Zarovich is gone. The Dark Powers are patient. The cycle will begin again, somewhere, eventually. That is their nature. But not here, and not today. For this moment, Barovia breathes.
+          </div>
+          <button className="game-over-return ebtn" onClick={onExit}>Begin a New Journey</button>
         </div>
       )}
 
