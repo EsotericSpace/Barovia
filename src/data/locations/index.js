@@ -3,7 +3,9 @@ import { krezk } from './krezk.js'
 import { abbey } from './abbey.js'
 import { castleRavenloft } from './castleRavenloft.js'
 import { amberTemple } from './amberTemple.js'
+import { deathHouse } from './deathHouse.js'
 import { villageOfBarovia } from './villageOfBarovia.js'
+import { tserPool } from './tserPool.js'
 import { oldBonegrinder } from './oldBonegrinder.js'
 import { wizardOfWines } from './wizardOfWines.js'
 import { vanRichtensTower } from './vanRichtensTower.js'
@@ -14,7 +16,9 @@ import { tsolenkaPass } from './tsolenkaPass.js'
 import { ruinsOfBerez } from './ruinsOfBerez.js'
 
 export const LOCATIONS = {
+  'death-house': deathHouse,
   'village-of-barovia': villageOfBarovia,
+  'tser-pool': tserPool,
   'vallaki': vallaki,
   'krezk': krezk,
   'abbey': abbey,
@@ -33,7 +37,9 @@ export const LOCATIONS = {
 // Default location flow — rough narrative order
 // DM should use [LOCATION:slug] tag to advance
 export const LOCATION_ORDER = [
+  'death-house',
   'village-of-barovia',
+  'tser-pool',
   'vallaki',
   'krezk',
   'abbey',

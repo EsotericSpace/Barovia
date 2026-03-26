@@ -6,7 +6,6 @@ export const villageOfBarovia = {
   status: 'available',
   nearby: ['vallaki', 'castle-ravenloft'],
   levelTriggers: [
-    { level: 2, milestone: 'death-house-survived', condition: 'surviving Death House' },
     { level: 3, milestone: 'village-escaped', condition: "escaping the Village of Barovia or resolving Ireena's immediate crisis" },
   ],
 

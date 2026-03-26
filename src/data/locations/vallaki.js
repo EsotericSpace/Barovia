@@ -6,7 +6,6 @@ export const vallaki = {
   status: 'available',
   nearby: ['krezk', 'wizard-of-wines', 'old-bonegrinder', 'yester-hill'],
   levelTriggers: [
-    { level: 4, milestone: 'tarokka-reading', condition: "receiving Madam Eva's tarokka reading on the road to Vallaki" },
     { level: 5, milestone: 'vallaki-resolved', condition: 'resolving the central crisis in Vallaki (festival, bones, or Wachter)' },
   ],
   summary: `A walled town ruled by enforced celebration. Baron Vallakovich arrests dissidents for "malicious unhappiness." Lady Wachter waits to replace him and would hand the town to Strahd to do it. A vampire nest is hidden inside the coffin maker's shop.`,
