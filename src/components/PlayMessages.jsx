@@ -57,21 +57,30 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
           </div>
         )
 
-        if (m.role === 'rollprompt') return (
-          <button key={m.id} className="rollcard rollcard-prompt" onClick={() => onRollPrompt(m)}>
-            <div className="roll-prompt-icon">
-              <span className="material-symbols-outlined">casino</span>
-            </div>
-            <div>
-              <div className="roll-skill-dc">{m.skill}</div>
-              <div className="roll-prompt-sub">{m.ability}{m.modifier >= 0 ? ` +${m.modifier}` : ` ${m.modifier}`} · click to roll</div>
-            </div>
-          </button>
-        )
+        if (m.role === 'rollprompt') {
+          const profLabel = m.expert ? ' · ★ exp' : m.proficient ? ' · prof' : ''
+          const advLabel = m.adv === 'adv' ? ' · adv' : m.adv === 'dis' ? ' · dis' : ''
+          return (
+            <button key={m.id} className="rollcard rollcard-prompt" onClick={() => onRollPrompt(m)}>
+              <div className="roll-prompt-icon">
+                <span className="material-symbols-outlined">casino</span>
+              </div>
+              <div>
+                <div className="roll-skill-dc">{m.skill}</div>
+                <div className="roll-prompt-sub">{m.ability}{m.modifier >= 0 ? ` +${m.modifier}` : ` ${m.modifier}`}{profLabel}{advLabel} · click to roll</div>
+              </div>
+            </button>
+          )
+        }
 
         if (m.role === 'roll') {
           const colorClass = rollColorClass(m.total, m.dc)
           const nat = m.d20 === 20 || m.d20 === 1
+          const profLabel = m.expert ? '+exp' : m.proficient ? '+prof' : ''
+          const advLabel = m.adv === 'adv' ? ' · adv' : m.adv === 'dis' ? ' · dis' : ''
+          const diceStr = m.dropped != null
+            ? `d20(${m.d20}, ${m.dropped}↷)`
+            : `d20(${m.d20})`
           return (
             <div key={m.id} ref={null} className="rollcard">
               <div className="roll-total-wrap">
@@ -79,7 +88,7 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
                 {nat && <div className={`roll-nat ${colorClass}`}>{m.d20 === 20 ? 'NAT 20' : 'NAT 1'}</div>}
               </div>
               <div>
-                <div className="roll-skill-dc">{m.skill}{m.dc != null ? ` · DC ${m.dc}` : ''}</div>
+                <div className="roll-skill-dc">{m.skill}{m.dc != null ? ` · DC ${m.dc}` : ''}{advLabel}</div>
                 {m.success != null && (
                   <div className={`roll-result ${m.success ? 'roll-color-success' : 'roll-color-fail'}`}>
                     {m.success ? 'Success' : 'Failure'}
@@ -87,7 +96,7 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
                 )}
               </div>
               <div className="tipwrap roll-tip">
-                ⓘ<span className="tip">d20({m.d20}) {m.modifier >= 0 ? '+' : ''}{m.modifier} [{m.ability}] = {m.total} vs DC {m.dc}</span>
+                ⓘ<span className="tip">{diceStr} {m.modifier >= 0 ? '+' : ''}{m.modifier} [{m.ability}{profLabel}] = {m.total}{m.dc != null ? ` vs DC ${m.dc}` : ''}</span>
               </div>
             </div>
           )
@@ -153,7 +162,7 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
       {loading && (
         <div className="loading-dots">
           {[0,1,2].map(i => (
-            <span key={i} className="loading-dot" />
+            <span key={i} className="loading-dot" style={{ animationDelay: `${i * 0.2}s` }} />
           ))}
         </div>
       )}

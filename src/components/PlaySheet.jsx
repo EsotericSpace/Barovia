@@ -141,7 +141,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
               <div className="skill-inline">
                 {SKILLS.filter(s => profLevel(s.name) > 0).map((s, i, arr) => {
                   const expert = profLevel(s.name) === 2
-                  const val = skillMod(s.name, character.stats, allProfs, expertise)
+                  const val = skillMod(s.name, character.stats, allProfs, expertise, character.profBonus ?? PROF_BONUS)
                   const valStr = val >= 0 ? `+${val}` : `${val}`
                   return (
                     <span key={s.name} className={`skill-inline-item${expert ? ' expert' : ''}`}>
