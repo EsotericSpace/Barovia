@@ -193,7 +193,12 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
         <div className="cg-tab-bar">
           {[['story', 'Background'], ['class', 'Class'], ['scores', 'Scores', 'Stats']].map(([id, label, mobileLabel]) => (
             <button key={id} className={`cg-tab${activeTab === id ? ' active' : ''}`} onClick={() => setActiveTab(id)}>
-              <span className="cg-tab-label" data-mobile={mobileLabel ?? label}>{label}</span>
+              <span className="cg-tab-label">
+                {mobileLabel
+                  ? <><span className="tab-label-full">{label}</span><span className="tab-label-short">{mobileLabel}</span></>
+                  : label
+                }
+              </span>
             </button>
           ))}
         </div>

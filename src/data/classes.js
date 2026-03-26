@@ -223,3 +223,72 @@ export const CLASS_CONFIG = {
 }
 
 export const CLASSES = Object.keys(CLASS_CONFIG)
+
+export const CLASS_FEATURE_LABELS = {
+  rage:                'Rage',
+  bardic_inspiration:  'Bardic Inspiration',
+  channel_divinity:    'Channel Divinity',
+  wild_shape:          'Wild Shape',
+  second_wind:         'Second Wind',
+  action_surge:        'Action Surge',
+  ki:                  'Ki Points',
+  lay_on_hands:        'Lay on Hands (HP)',
+  divine_sense:        'Divine Sense',
+  sorcery_points:      'Sorcery Points',
+  arcane_recovery:     'Arcane Recovery',
+}
+
+// Which rest restores each feature. bardic_inspiration is longrest at L1-4, shortrest at L5+;
+// handle the L5+ case explicitly in rest logic.
+export const CLASS_FEATURE_RECOVERY = {
+  rage:               'longrest',
+  bardic_inspiration: 'longrest',
+  channel_divinity:   'shortrest',
+  wild_shape:         'shortrest',
+  second_wind:        'shortrest',
+  action_surge:       'shortrest',
+  ki:                 'shortrest',
+  lay_on_hands:       'longrest',
+  divine_sense:       'longrest',
+  sorcery_points:     'longrest',
+  arcane_recovery:    'longrest',
+}
+
+export function getClassFeatureMax(cls, stats, level) {
+  const chaMod = Math.floor(((stats?.charisma ?? 10) - 10) / 2)
+  const f = {}
+  switch (cls) {
+    case 'Barbarian':
+      f.rage = level >= 12 ? 5 : level >= 6 ? 4 : level >= 3 ? 3 : 2
+      break
+    case 'Bard':
+      f.bardic_inspiration = Math.max(1, chaMod)
+      break
+    case 'Cleric':
+      f.channel_divinity = level >= 6 ? 2 : 1
+      break
+    case 'Druid':
+      if (level >= 2) f.wild_shape = 2
+      break
+    case 'Fighter':
+      f.second_wind = 1
+      if (level >= 2) f.action_surge = level >= 17 ? 2 : 1
+      break
+    case 'Monk':
+      if (level >= 2) f.ki = level
+      break
+    case 'Paladin':
+      f.lay_on_hands = level * 5
+      f.divine_sense = 1 + Math.max(0, chaMod)
+      break
+    case 'Sorcerer':
+      if (level >= 2) f.sorcery_points = level
+      break
+    case 'Wizard':
+      f.arcane_recovery = 1
+      break
+    default:
+      break
+  }
+  return f
+}

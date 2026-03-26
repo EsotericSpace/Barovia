@@ -128,6 +128,7 @@ export function generateSheet(cls) {
     initiative: mod(stats.dexterity),
     speed: BASE_SPEED,
     profBonus: PROF_BONUS,
+    stProfs: cfg.stProfs ?? [],
     hd: cfg.hd,
     cantrips: finalSpells?.cantrips ?? [],
     spellsKnown: finalSpells?.spells ?? [],
