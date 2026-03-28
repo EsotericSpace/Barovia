@@ -1,6 +1,7 @@
 import { BACKGROUNDS } from "../data/backgrounds.js";
 import { CONDITIONS } from "../data/conditions.js";
 import { CLASS_CONFIG, CLASS_FEATURE_LABELS, getClassFeatureMax } from "../data/classes.js";
+import { SUBCLASS_CONFIG, getFeatureLabel } from "../data/subclasses.js";
 import { SK, SA, mod, modStr } from "./dnd.js";
 import { LOCATIONS } from "../data/locations/index.js";
 import { CLASS_SEEDS, BACKGROUND_SEEDS, CLOSING_LINES } from "../data/seeds.js";
@@ -62,11 +63,12 @@ export function buildSystemPrompt(character) {
   const spellLine = character.cantrips?.length
     ? `Cantrips: ${character.cantrips.join(", ")} | Spells known: ${spellsKnownStr} | Spell slots: ${slotStr ?? "none"}${character.shortRestCaster ? " (short rest)" : ""}`
     : null;
-  const cfMax = getClassFeatureMax(cls, stats, character.level ?? 1)
+  const cfMax = getClassFeatureMax(cls, stats, character.level ?? 1, subclass)
   const cf = character.classFeatures
   const cfLine = cf && Object.keys(cfMax).length
-    ? Object.entries(cfMax).map(([k, max]) => `${CLASS_FEATURE_LABELS[k] ?? k}: ${cf[k] ?? max}/${max}`).join(' | ')
+    ? Object.entries(cfMax).map(([k, max]) => `${getFeatureLabel(k, subclass) ?? CLASS_FEATURE_LABELS[k] ?? k}: ${cf[k] ?? max}/${max}`).join(' | ')
     : null
+  const scDmNotes = subclass && subclassActive ? (SUBCLASS_CONFIG[subclass]?.dmNotes ?? null) : null
 
   const activeConditions = (conditions ?? []).length
     ? (conditions ?? [])
@@ -157,7 +159,7 @@ Personality: ${personality}
 Ideal: ${ideal} | Bond: ${bond} | Flaw: ${flaw}
 Inventory: ${inv}${spellLine ? `\n${spellLine}` : ""}${cfLine ? `\nClass features: ${cfLine}` : ""}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ""}
 
-${cls}: ${classNarrative}${subclass && subclassActive ? `\n${subclass}: ${subclassDesc}` : ""}
+${cls}: ${classNarrative}${subclass && subclassActive ? `\n${subclass}: ${subclassDesc}` : ""}${scDmNotes ? `\n${scDmNotes}` : ""}
 
 Honor their class, background, and personality. The background feature (${bg?.feature}) should come up naturally — don't announce it, just use it. Press on their flaw and bond — Barovia finds every wound.
 </character>
@@ -196,7 +198,8 @@ ${FORMATTING}
 Append these tags SILENTLY at the very end of your response, after all narrative (the app strips them, the player never sees them):
 - Hostile creature present: [MONSTER:slug] using dnd5eapi.co slugs e.g. wolf, zombie, skeleton, shadow, ghoul, ghast, wight, specter, wraith, banshee, vampire, werewolf, swarm-of-bats, will-o-wisp, revenant — fire [ENDCOMBAT] when the encounter ends (creature defeated, fled, or resolved without violence)
 - Item gained: [ITEM:+name] | Item lost/used: [ITEM:-name]
-- HP change: [STAT:hp:newValue]
+- Enemy attack hits: [DAMAGE:XdY+Z] using the monster's damage dice from its stat block (e.g. [DAMAGE:2d6+3] for a longsword attack). The app rolls the dice, applies the result to HP, and returns the result to you — then narrate the hit landing and its severity. Do NOT pre-narrate the outcome before the result returns. Emit the tag before any narration of the hit.
+- HP change (non-attack sources — traps, poison, healing spells, potions): [STAT:hp:+N] to heal or [STAT:hp:-N] to damage. The app clamps to 0–maxHP automatically.
 - Ability check or skill check (known DC): [ROLL:skillname:dc] or [ROLL:skillname:dc:adv] or [ROLL:skillname:dc:dis] — app auto-rolls d20 + skill modifier (includes proficiency and expertise where applicable). Skill names: athletics, acrobatics, stealth, arcana, history, investigation, nature, religion, animal_handling, insight, medicine, perception, survival, deception, intimidation, performance, persuasion. Raw ability checks: strength, dexterity, constitution, intelligence, wisdom, charisma (no proficiency applied).
 - Saving throw (known DC): [SAVE:ability:dc] or [SAVE:ability:dc:adv] or [SAVE:ability:dc:dis] — app auto-rolls d20 + save modifier (applies class save proficiency if the character has it). Use this for all saving throws. Ability names: strength, dexterity, constitution, intelligence, wisdom, charisma. The character's save proficiencies are listed in the character block under "Saves".
 - Skill check (player rolls, no DC): [ROLLPROMPT:skillname] or [ROLLPROMPT:skillname:adv] or [ROLLPROMPT:skillname:dis] — surfaces a roll button the player clicks. Use when you want the player to initiate the roll, or when the DC depends on the result. Same skill names as above. When the result is returned as [Player roll: skill — ...], narrate what the character perceives or discovers based on the total.

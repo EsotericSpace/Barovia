@@ -8,6 +8,17 @@ export function spellLevelStr(n) { const s = ['th','st','nd','rd']; return n + (
 
 export function rollD20() { return Math.floor(Math.random() * 20) + 1 }
 
+// Roll a dice expression like "2d6+3", "1d8", "3d4-1". Returns { rolls, total }.
+export function rollDice(expr) {
+  const m = expr.trim().match(/^(\d+)d(\d+)([+-]\d+)?$/i)
+  if (!m) return { rolls: [], total: 0 }
+  const count = parseInt(m[1])
+  const sides = parseInt(m[2])
+  const mod   = parseInt(m[3] ?? '0')
+  const rolls = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
+  return { rolls, total: rolls.reduce((s, r) => s + r, 0) + mod }
+}
+
 // Roll with advantage ('adv'), disadvantage ('dis'), or straight (null/undefined).
 // Returns { kept, dropped } — dropped is null for straight rolls.
 export function rollWithAdv(adv) {

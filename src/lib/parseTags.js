@@ -11,8 +11,16 @@ export function parseTags(raw) {
       tags.push({ type: 'item', val: s.trim() })
       return ''
     })
-    .replace(/\[STAT:hp:(\d+)\]/g, (_, v) => {
+    .replace(/\[STAT:hp:([+-]\d+)\]/g, (_, v) => {
       tags.push({ type: 'hp', val: parseInt(v) })
+      return ''
+    })
+    .replace(/\[DAMAGE:([^\]]+)\]/g, (_, expr) => {
+      tags.push({ type: 'damage', expr: expr.trim() })
+      return ''
+    })
+    .replace(/\[SURGE\]/g, () => {
+      tags.push({ type: 'surge' })
       return ''
     })
     .replace(/\[ROLL:([^:]+):(\d+)(?::(adv|dis))?\]/g, (_, skill, dc, adv) => {

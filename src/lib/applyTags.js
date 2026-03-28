@@ -1,8 +1,9 @@
 import { drawReading, redrawLair } from '../data/tarokka.js'
 import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { LOCATIONS } from '../data/locations/index.js'
-import { SA, SKILL_MAP, rollWithAdv, rollModifier, saveModifier } from './dnd.js'
+import { SA, SKILL_MAP, rollWithAdv, rollModifier, saveModifier, rollDice } from './dnd.js'
 import { getClassFeatureMax, CLASS_FEATURE_RECOVERY } from '../data/classes.js'
+import { getFeatureRecovery } from '../data/subclasses.js'
 
 const MILESTONE_MAP = Object.fromEntries(
   Object.values(LOCATIONS).flatMap(loc =>
@@ -43,10 +44,26 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
             : c.inventory.filter(i => i.toLowerCase() !== item.toLowerCase()),
         }))
       }
+      if (t.type === 'damage') {
+        const { rolls, total } = rollDice(t.expr)
+        const c = charRef.current
+        const newHp = Math.max(0, c.hp - total)
+        onCharacterUpdate(ch => {
+          const next = { ...ch, hp: newHp }
+          if (newHp === 0 && ch.hp > 0) next.deathSaves = { successes: 0, failures: 0 }
+          return next
+        })
+        const rollStr = rolls.length > 1 ? ` (${rolls.join(', ')})` : ''
+        buf.push({
+          role: 'damage', id: 'dmg-' + Date.now() + Math.random(),
+          expr: t.expr, total, rollStr, newHp, maxHp: c.maxHp,
+        })
+      }
       if (t.type === 'hp') onCharacterUpdate(c => {
+        const newHp = Math.max(0, Math.min(c.maxHp, c.hp + t.val))
         const wasAtZero = c.hp === 0
-        const next = { ...c, hp: t.val }
-        if (wasAtZero && t.val > 0) next.deathSaves = { successes: 0, failures: 0 }
+        const next = { ...c, hp: newHp }
+        if (wasAtZero && newHp > 0) next.deathSaves = { successes: 0, failures: 0 }
         return next
       })
       if (t.type === 'spelllearn') onCharacterUpdate(c => ({
@@ -104,8 +121,8 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
                 return { ...def, used: existing?.used ?? 0 }
               })
             : c.spellSlots
-          const oldMax = getClassFeatureMax(c.class, c.stats, c.level ?? 1)
-          const newMax = getClassFeatureMax(c.class, c.stats, newLevel)
+          const oldMax = getClassFeatureMax(c.class, c.stats, c.level ?? 1, c.subclass)
+          const newMax = getClassFeatureMax(c.class, c.stats, newLevel, c.subclass)
           const newFeatures = Object.fromEntries(
             Object.entries(newMax).map(([k, max]) => {
               const gained = max - (oldMax[k] ?? 0)
@@ -130,10 +147,11 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
         const hpGain = hdAvg + mod(c.stats.constitution)
         const newHp = Math.min(c.hp + Math.max(1, hpGain), c.maxHp)
         const isWarlock = SHORT_REST_CASTERS.has(c.class)
-        const cfMax = getClassFeatureMax(c.class, c.stats, c.level ?? 1)
+        const cfMax = getClassFeatureMax(c.class, c.stats, c.level ?? 1, c.subclass)
         const cfRestored = Object.fromEntries(
           Object.entries(cfMax).filter(([k]) => {
             if (CLASS_FEATURE_RECOVERY[k] === 'shortrest') return true
+            if (getFeatureRecovery(k, c.subclass) === 'shortrest') return true
             if (k === 'bardic_inspiration' && (c.level ?? 1) >= 5) return true
             return false
           })
@@ -153,7 +171,7 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
           ...c,
           hp: c.maxHp,
           spellSlots: Array.isArray(c.spellSlots) ? c.spellSlots.map(s => ({ ...s, used: 0 })) : c.spellSlots,
-          classFeatures: getClassFeatureMax(c.class, c.stats, c.level ?? 1),
+          classFeatures: getClassFeatureMax(c.class, c.stats, c.level ?? 1, c.subclass),
           day: (c.day ?? 1) + 1,
         }))
         buf.push({ role: 'rest', id: 'lr-' + Date.now(), short: false })
