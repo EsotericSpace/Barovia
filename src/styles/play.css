@@ -149,16 +149,14 @@
 
 /* Roll card prompt */
 .rollcard-prompt {
+  --roll-accent: var(--accent-primary);
   cursor: pointer;
-  border-color: var(--accent-primary) !important;
-  background: var(--tint-primary-xs) !important;
-  transition:
-    background var(--dur-fast),
-    border-color var(--dur-fast);
+  background: var(--tint-primary-xs);
+  transition: background var(--dur-fast);
 }
 .rollcard-prompt:hover {
-  background: var(--tint-primary) !important;
-  border-color: var(--accent) !important;
+  --roll-accent: var(--accent);
+  background: var(--tint-primary);
 }
 .roll-prompt-icon {
   color: var(--accent-primary);
@@ -190,7 +188,7 @@
   z-index: 200;
 }
 .game-over-title {
-  font-size: 1.8rem;
+  font-size: var(--fs-2xl);
   font-weight: 600;
 }
 .game-over-label {
@@ -340,7 +338,6 @@
 }
 
 /* Roll card */
-.rollcard,
 .event-card {
   align-self: flex-start;
   display: inline-flex;
@@ -350,6 +347,57 @@
   padding: var(--sp-sm) var(--sp-md);
   background: var(--overlay-card);
 }
+
+/* Ornamental double-border frame */
+.rollcard {
+  --roll-accent: var(--text-inactive);
+  position: relative;
+  align-self: flex-start;
+  padding: 4px;
+  border: 1px solid var(--roll-accent);
+  background: var(--overlay-card);
+}
+.rollcard::before,
+.rollcard::after {
+  content: "•";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  font-size: var(--fs-xs);
+  color: var(--roll-accent);
+  border: 1px solid var(--roll-accent);
+  line-height: 12px;
+  top: 4px;
+  text-align: center;
+  background: var(--overlay-card);
+  z-index: 1;
+}
+.rollcard::before { left: 4px; }
+.rollcard::after  { right: 4px; }
+.rollcard-inner {
+  position: relative;
+  border: 1px solid var(--roll-accent);
+  padding: var(--sp-sm) var(--sp-md);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+.rollcard-inner::before,
+.rollcard-inner::after {
+  content: "•";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  font-size: var(--fs-xs);
+  color: var(--roll-accent);
+  border: 1px solid var(--roll-accent);
+  line-height: 12px;
+  bottom: -1px;
+  text-align: center;
+  background: var(--overlay-card);
+}
+.rollcard-inner::before { left: -1px; }
+.rollcard-inner::after  { right: -1px; }
 .roll-total-wrap {
   text-align: center;
   min-width: 2rem;
@@ -466,7 +514,7 @@
 .play-textarea {
   flex: 1;
   background: transparent;
-  font-size: 16px;
+  font-size: var(--fs-xl);
   line-height: 1.9;
   resize: none;
   outline: none;

@@ -40,9 +40,89 @@
   margin-bottom: 0.15rem;
 }
 
+/* Spell slot tracker */
+.bg-inner.slot-block {
+  padding: 0;
+}
+.slot-tracker {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+}
+.slot-col {
+  padding: var(--sp-sm) var(--sp-lg);
+  border-right: 1px solid var(--border);
+  align-items: center;
+}
+.slot-col:last-child { border-right: none; }
+.slot-col-label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+  align-items: center;
+}
+.slot-level-num,
+.slot-total-num {
+  font-size: var(--fs-md);
+  text-transform: uppercase;
+  color: var(--accent-highlight);
+  line-height: 1;
+  text-align: center;
+}
+.slot-pips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  align-items: center;
+  justify-content: center;
+}
+.slot-pip {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--accent-highlight);
+  line-height: 1;
+  transition: color var(--dur-fast);
+}
+.slot-pip .material-symbols-outlined {
+  font-size: var(--icon-size-sm);
+  font-variation-settings: 'FILL' 1, 'wght' 200;
+}
+.slot-pip.spent { color: var(--border); }
+.slot-pip.spent .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 200; }
+.slot-pip:hover:not(.spent) { color: var(--accent-highlight); }
+.slot-pip.spent:hover { color: var(--text-inactive); }
+.slot-level-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
 /* Spells */
+.spell-name {
+  color: var(--accent-highlight);
+}
+.spell-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  padding: var(--sp-sm) 0;
+}
+.spell-entry-header {
+  display: flex;
+  font: var(--font-display);
+  align-items: baseline;
+  gap: var(--sp-sm);
+}
 .spell-tier {
   margin-left: auto;
+}
+.spell-desc {
+  font-size: var(--fs-xs);
+  color: var(--text);
+  line-height: 1.4;
 }
 
 /* Combat / saves */
@@ -124,9 +204,64 @@
 /* Background block */
 .bg-block,
 .ps-bg-block {
+  position: relative;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+.bg-block.outer {
+  padding: var(--sp-xs);
+}
+.bg-block.outer::before,
+.bg-block.outer::after {
+  display: none;
+}
+.bg-block::before,
+.bg-block::after,
+.ps-bg-block::before,
+.ps-bg-block::after {
+  content: "•";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  font-size: var(--fs-xs);
+  color: var(--border);
+  border: 1px solid var(--border);
+  line-height: 12px;
+  top: 4px;
+  text-align: center;
+  background: var(--bg-panel);
+  z-index: 1;
+}
+.bg-block::before,
+.ps-bg-block::before { left: 4px; }
+.bg-block::after,
+.ps-bg-block::after  { right: 4px; }
+.bg-inner,
+.ps-bg-inner {
+  position: relative;
   border: 1px solid var(--border);
   padding: var(--sp-md);
 }
+.bg-inner::before,
+.bg-inner::after,
+.ps-bg-inner::before,
+.ps-bg-inner::after {
+  content: "•";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  font-size: var(--fs-xs);
+  color: var(--border);
+  border: 1px solid var(--border);
+  line-height: 12px;
+  bottom: -1px;
+  text-align: center;
+  background: var(--bg-panel);
+}
+.bg-inner::before,
+.ps-bg-inner::before { left: -1px; }
+.bg-inner::after,
+.ps-bg-inner::after  { right: -1px; }
 .bg-divider,
 .ps-divider {
   height: 1px;
@@ -147,11 +282,11 @@
   margin-bottom: var(--sp-xs);
 }
 .bg-arrow {
-  color: var(--text-inactive);
+  color: var(--accent-highlight);
   transition: color var(--dur-fast);
 }
 .bg-arrow:hover {
-  color: var(--text-secondary);
+  color: var(--accent);
 }
 .class-blurb {
   min-height: calc(var(--fs-sm) * 1.6 * 6);

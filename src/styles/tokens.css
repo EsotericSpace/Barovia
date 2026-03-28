@@ -22,10 +22,10 @@ html {
   --text-secondary: #aba09c; /* taupe-400 */
   --text-tertiary: #7c6d67; /* taupe-500 */
   --text-inactive: #5b4f4b; /* taupe-600 */
-  --text-aside: #075985; /* sky-900 */
+  --text-aside: #7dd3fc; /* sky-200 */
 
   /* Message borders */
-  --ooc-border: #134e4a; /* teal-900 */
+  --ooc-border: #0c4a6e; /* sky-900 */
   --ic-border: #450a0a; /* red-950 */
 
   /* HP states */

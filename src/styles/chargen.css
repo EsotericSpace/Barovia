@@ -153,6 +153,7 @@
   position: absolute;
   top: var(--sp-sm);
   right: var(--sp-xs);
+  color: var(--accent-highlight);
   transition: color var(--dur-fast);
 }
 .lock-btn.active {
@@ -161,12 +162,12 @@
 }
 .reroll-btn,
 .cg-reroll-btn {
-  color: var(--text-tertiary);
+  color: var(--accent-highlight);
   transition: color var(--dur-base);
 }
 .reroll-btn:hover,
 .cg-reroll-btn:hover:not(:disabled) {
-  color: var(--text-secondary);
+  color: var(--accent);
 }
 .cg-reroll-btn {
   display: flex;
@@ -232,7 +233,7 @@
     margin-bottom: 0 !important;
   }
   .cg-identity {
-    font-size: 0.67rem;
+    font-size: var(--fs-2xs);
     line-height: 1.3;
   }
   .cg-tab-bar {
@@ -246,7 +247,7 @@
     text-align: center;
   }
   .cg-tab-label {
-    font-size: 0.6rem;
+    font-size: var(--fs-2xs);
   }
   .tab-label-full { display: none; }
   .tab-label-short { display: inline; }
