@@ -62,12 +62,14 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
           const advLabel = m.adv === 'adv' ? ' · adv' : m.adv === 'dis' ? ' · dis' : ''
           return (
             <button key={m.id} className="rollcard rollcard-prompt" onClick={() => onRollPrompt(m)}>
-              <div className="roll-prompt-icon">
-                <span className="material-symbols-outlined">casino</span>
-              </div>
-              <div>
-                <div className="roll-skill-dc">{m.skill}</div>
-                <div className="roll-prompt-sub">{m.ability}{m.modifier >= 0 ? ` +${m.modifier}` : ` ${m.modifier}`}{profLabel}{advLabel} · click to roll</div>
+              <div className="rollcard-inner">
+                <div className="roll-prompt-icon">
+                  <span className="material-symbols-outlined">casino</span>
+                </div>
+                <div>
+                  <div className="roll-skill-dc">{m.skill}</div>
+                  <div className="roll-prompt-sub">{m.ability}{m.modifier >= 0 ? ` +${m.modifier}` : ` ${m.modifier}`}{profLabel}{advLabel} · click to roll</div>
+                </div>
               </div>
             </button>
           )
@@ -83,24 +85,45 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
             : `d20(${m.d20})`
           return (
             <div key={m.id} ref={null} className="rollcard">
-              <div className="roll-total-wrap">
-                <div className={`roll-total ${colorClass}`}>{m.total}</div>
-                {nat && <div className={`roll-nat ${colorClass}`}>{m.d20 === 20 ? 'NAT 20' : 'NAT 1'}</div>}
-              </div>
-              <div>
-                <div className="roll-skill-dc">{m.skill}{m.dc != null ? ` · DC ${m.dc}` : ''}{advLabel}</div>
-                {m.success != null && (
-                  <div className={`roll-result ${m.success ? 'roll-color-success' : 'roll-color-fail'}`}>
-                    {m.success ? 'Success' : 'Failure'}
-                  </div>
-                )}
-              </div>
-              <div className="tipwrap roll-tip">
-                ⓘ<span className="tip">{diceStr} {m.modifier >= 0 ? '+' : ''}{m.modifier} [{m.ability}{profLabel}] = {m.total}{m.dc != null ? ` vs DC ${m.dc}` : ''}</span>
+              <div className="rollcard-inner">
+                <div className="roll-total-wrap">
+                  <div className={`roll-total ${colorClass}`}>{m.total}</div>
+                  {nat && <div className={`roll-nat ${colorClass}`}>{m.d20 === 20 ? 'NAT 20' : 'NAT 1'}</div>}
+                </div>
+                <div>
+                  <div className="roll-skill-dc">{m.skill}{m.dc != null ? ` · DC ${m.dc}` : ''}{advLabel}</div>
+                  {m.success != null && (
+                    <div className={`roll-result ${m.success ? 'roll-color-success' : 'roll-color-fail'}`}>
+                      {m.success ? 'Success' : 'Failure'}
+                    </div>
+                  )}
+                </div>
+                <div className="tipwrap roll-tip">
+                  ⓘ<span className="tip">{diceStr} {m.modifier >= 0 ? '+' : ''}{m.modifier} [{m.ability}{profLabel}] = {m.total}{m.dc != null ? ` vs DC ${m.dc}` : ''}</span>
+                </div>
               </div>
             </div>
           )
         }
+
+        if (m.role === 'damage') return (
+          <div key={m.id} className="rollcard">
+            <div className="rollcard-inner">
+              <div className="roll-total-wrap">
+                <div className="roll-total roll-color-fail">{m.total}</div>
+              </div>
+              <div>
+                <div className="roll-skill-dc">Damage · {m.expr}</div>
+                <div className="roll-result roll-color-fail">HP {m.newHp} / {m.maxHp}</div>
+              </div>
+              {m.rollStr && (
+                <div className="tipwrap roll-tip">
+                  ⓘ<span className="tip">{m.expr}{m.rollStr} = {m.total}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )
 
         if (m.role === 'rest') return (
           <div key={m.id} ref={null} className="event-card">

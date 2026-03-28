@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SK, SA, mod, modStr, SKILLS, PROF_BONUS, skillMod, spellLevelStr } from '../lib/dnd.js'
 import { CLASS_CONFIG } from '../data/classes.js'
 import { CONDITIONS } from '../data/conditions.js'
+import { SPELL_DESCRIPTIONS } from '../data/spells.js'
 import { SUBCLASS_SHORT, BACKGROUND_SHORT, TRAIT_ITEMS } from '../lib/chargen.js'
 
 const TRAIT_ITEM_NAMES = new Set(TRAIT_ITEMS.values())
@@ -154,13 +155,15 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
 
             <Section label="Background" open={open.background} onToggle={() => toggle('background')}>
               <div className="ps-bg-block">
-                <div className="ps-bg-name">{character.background}</div>
-                {bg && <>
-                  <div className="ps-bg-desc">{bg.desc}</div>
-                  <div className="ps-divider" />
-                  <div className="ps-feature-label">Feature · {bg.feature}</div>
-                  <div className="ps-feature-desc">{bg.featureDesc}</div>
-                </>}
+                <div className="ps-bg-inner">
+                  <div className="ps-bg-name">{character.background}</div>
+                  {bg && <>
+                    <div className="ps-bg-desc">{bg.desc}</div>
+                    <div className="ps-divider" />
+                    <div className="ps-feature-label">Feature · {bg.feature}</div>
+                    <div className="ps-feature-desc">{bg.featureDesc}</div>
+                  </>}
+                </div>
               </div>
             </Section>
 
@@ -275,34 +278,81 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
         {tab === 'spells' && (
           <div className="cg-col">
 
-            {(character.cantrips?.length > 0 || character.spellsKnown?.length > 0) && (
-              <div>
-                <div className="ps-section-header">Spells</div>
-                {character.spellSlots?.length > 0 && (
-                  <div className="ps-spell-summary">
-                    {character.spellSlots.reduce((a, s) => a + (s.used ?? 0), 0)}/{character.spellSlots.reduce((a, s) => a + s.total, 0)} slots used · recovers on {character.shortRestCaster ? 'short' : 'long'} rest
-                  </div>
-                )}
-                <div className="spell-list">
-                  {(character.cantrips ?? []).map(s => (
-                    <div key={s} className="list-row">
-                      <span className="spell-name">{s}</span>
-                      <span className="spell-tier">cantrip</span>
+            {character.cantrips?.length > 0 && (
+              <div className="slot-level-group">
+                <div className="bg-block">
+                  <div className="bg-inner slot-block">
+                    <div className="slot-col">
+                      <div className="slot-col-label">Level</div>
+                      <div className="slot-level-num">Cantrip</div>
                     </div>
-                  ))}
-                  {(character.spellsKnown ?? []).map(s => {
+                  </div>
+                </div>
+                {character.cantrips.map(s => (
+                  <div key={s} className="spell-entry">
+                    <span className="spell-name">{s}</span>
+                    {SPELL_DESCRIPTIONS[s] && <div className="spell-desc">{SPELL_DESCRIPTIONS[s]}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(character.spellSlots ?? []).map(slot => {
+              const spellsAtLevel = (character.spellsKnown ?? []).filter(s =>
+                (typeof s === 'string' ? 1 : s.level) === slot.level
+              )
+              return (
+                <div key={slot.level} className="slot-level-group">
+                  <div className="bg-block">
+                    <div className="bg-inner slot-block">
+                      <div className="slot-tracker">
+                        <div className="slot-col">
+                          <div className="slot-col-label">Level</div>
+                          <div className="slot-level-num">{slot.level}</div>
+                        </div>
+                        <div className="slot-col">
+                          <div className="slot-col-label">Total</div>
+                          <div className="slot-total-num">{slot.total}</div>
+                        </div>
+                        <div className="slot-col slot-col-pips">
+                          <div className="slot-col-label">Left</div>
+                          <div className="slot-pips">
+                            {Array.from({ length: slot.total }).map((_, i) => {
+                              const remaining = slot.total - (slot.used ?? 0)
+                              const spent = i >= remaining
+                              return (
+                                <button
+                                  key={i}
+                                  className={`slot-pip${spent ? ' spent' : ''}`}
+                                  onClick={() => onCharacterUpdate(c => ({
+                                    ...c,
+                                    spellSlots: c.spellSlots.map(s =>
+                                      s.level !== slot.level ? s
+                                        : { ...s, used: spent ? (s.used ?? 0) - 1 : (s.used ?? 0) + 1 }
+                                    )
+                                  }))}
+                                >
+                                  <span className="material-symbols-outlined">star_shine</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {spellsAtLevel.map(s => {
                     const name = typeof s === 'string' ? s : s.name
-                    const level = typeof s === 'string' ? 1 : s.level
                     return (
-                      <div key={name} className="list-row">
+                      <div key={name} className="spell-entry">
                         <span className="spell-name">{name}</span>
-                        <span className="spell-tier">{spellLevelStr(level)}</span>
+                        {SPELL_DESCRIPTIONS[name] && <div className="spell-desc">{SPELL_DESCRIPTIONS[name]}</div>}
                       </div>
                     )
                   })}
                 </div>
-              </div>
-            )}
+              )
+            })}
 
           </div>
         )}
