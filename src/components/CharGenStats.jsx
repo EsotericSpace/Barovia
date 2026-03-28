@@ -12,12 +12,14 @@ export default function CharGenStats({ sheet, cls, cfg, prevClass, nextClass, pr
       <div>
         <SL>Class</SL>
         <div className="bg-block">
-          <div className="bg-nav">
-            <button className="bg-arrow" onClick={prevClass}><span className="material-symbols-outlined">chevron_left</span></button>
-            <span className="bg-name">{cls}</span>
-            <button className="bg-arrow" onClick={nextClass}><span className="material-symbols-outlined">chevron_right</span></button>
+          <div className="bg-inner">
+            <div className="bg-nav">
+              <button className="bg-arrow" onClick={prevClass}><span className="material-symbols-outlined">chevron_left</span></button>
+              <span className="bg-name">{cls}</span>
+              <button className="bg-arrow" onClick={nextClass}><span className="material-symbols-outlined">chevron_right</span></button>
+            </div>
+            <div className="class-blurb">{cfg.blurb}</div>
           </div>
-          <div className="class-blurb">{cfg.blurb}</div>
         </div>
       </div>
 
@@ -27,12 +29,14 @@ export default function CharGenStats({ sheet, cls, cfg, prevClass, nextClass, pr
           {cfg.subclassLevel === 1 ? ' — Active' : ` — At Level ${cfg.subclassLevel}`}
         </div>
         <div className="bg-block">
-          <div className="bg-nav">
-            <button className="bg-arrow" onClick={prevSubclass}><span className="material-symbols-outlined">chevron_left</span></button>
-            <span className="bg-name">{sc.name}</span>
-            <button className="bg-arrow" onClick={nextSubclass}><span className="material-symbols-outlined">chevron_right</span></button>
+          <div className="bg-inner">
+            <div className="bg-nav">
+              <button className="bg-arrow" onClick={prevSubclass}><span className="material-symbols-outlined">chevron_left</span></button>
+              <span className="bg-name">{sc.name}</span>
+              <button className="bg-arrow" onClick={nextSubclass}><span className="material-symbols-outlined">chevron_right</span></button>
+            </div>
+            <div className="sc-desc">{sc.desc}</div>
           </div>
-          <div className="sc-desc">{sc.desc}</div>
         </div>
       </div>
 

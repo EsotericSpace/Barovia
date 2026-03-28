@@ -23,53 +23,59 @@ export default function CharGenCombat({ sheet, cfg, locked, toggleStatLock, cls,
             <span className="cg-reroll-count">({rerolls} rolls left)</span>
           </button>
         </div>
-        <div className="stat-grid">
-          {SK.map(k => {
-            const isLocked = !!locked.stats?.[k]
-            return (
-              <div key={k} className="stat-cell">
-                <LK on={isLocked} toggle={() => toggleStatLock(k)} />
-                <div className="stat-key">{SA[k]}</div>
-                <div className="stat-val">{sheet.stats[k]}</div>
-                <div className="stat-mod">{modStr(sheet.stats[k])}</div>
-              </div>
-            )
-          })}
+        <div className="bg-block outer">
+          <div className="stat-grid">
+            {SK.map(k => {
+              const isLocked = !!locked.stats?.[k]
+              return (
+                <div key={k} className="stat-cell">
+                  <LK on={isLocked} toggle={() => toggleStatLock(k)} />
+                  <div className="stat-key">{SA[k]}</div>
+                  <div className="stat-val">{sheet.stats[k]}</div>
+                  <div className="stat-mod">{modStr(sheet.stats[k])}</div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
       <div>
         <SL>Saving Throws</SL>
-        <div className="grid-3">
-          {SK.map(k => {
-            const prof = cfg.stProfs.includes(k)
-            const val = mod(sheet.stats[k]) + (prof ? PROF_BONUS : 0)
-            return (
-              <div key={k} className={`stat-row${prof ? ' prof' : ''}`}>
-                <span className="row-key">{SA[k]}</span>
-                <span className="row-val">{val >= 0 ? `+${val}` : `${val}`}</span>
-              </div>
-            )
-          })}
+        <div className="bg-block outer">
+          <div className="grid-3">
+            {SK.map(k => {
+              const prof = cfg.stProfs.includes(k)
+              const val = mod(sheet.stats[k]) + (prof ? PROF_BONUS : 0)
+              return (
+                <div key={k} className={`stat-row${prof ? ' prof' : ''}`}>
+                  <span className="row-key">{SA[k]}</span>
+                  <span className="row-val">{val >= 0 ? `+${val}` : `${val}`}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
       <div>
         <SL>Combat</SL>
-        <div className="grid-3">
-          {[
-            { label: 'HP',    value: sheet.maxHp },
-            { label: 'HD',    value: `d${sheet.hd}` },
-            { label: 'AC',    value: sheet.ac },
-            { label: 'Init',  value: signStr(sheet.initiative) },
-            { label: 'Speed', value: `${sheet.speed}ft` },
-            { label: 'Prof',  value: `+${sheet.profBonus}` },
-          ].map(({ label, value, hi }) => (
-            <div key={label} className={`stat-row${hi ? ' hi' : ''}`}>
-              <span className="row-key">{label}</span>
-              <span className="row-val">{value}</span>
-            </div>
-          ))}
+        <div className="bg-block outer">
+          <div className="grid-3">
+            {[
+              { label: 'HP',    value: sheet.maxHp },
+              { label: 'HD',    value: `d${sheet.hd}` },
+              { label: 'AC',    value: sheet.ac },
+              { label: 'Init',  value: signStr(sheet.initiative) },
+              { label: 'Speed', value: `${sheet.speed}ft` },
+              { label: 'Prof',  value: `+${sheet.profBonus}` },
+            ].map(({ label, value, hi }) => (
+              <div key={label} className={`stat-row${hi ? ' hi' : ''}`}>
+                <span className="row-key">{label}</span>
+                <span className="row-val">{value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

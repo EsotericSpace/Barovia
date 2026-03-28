@@ -12,15 +12,17 @@ export default function CharGenTraits({ sheet, bg, rerollTrait, prevBackground, 
       <div>
         <SL>Background</SL>
         <div className="bg-block">
-          <div className="bg-nav">
-            <button className="bg-arrow" onClick={prevBackground}><span className="material-symbols-outlined">chevron_left</span></button>
-            <span className="bg-name">{sheet.background}</span>
-            <button className="bg-arrow" onClick={nextBackground}><span className="material-symbols-outlined">chevron_right</span></button>
+          <div className="bg-inner">
+            <div className="bg-nav">
+              <button className="bg-arrow" onClick={prevBackground}><span className="material-symbols-outlined">chevron_left</span></button>
+              <span className="bg-name">{sheet.background}</span>
+              <button className="bg-arrow" onClick={nextBackground}><span className="material-symbols-outlined">chevron_right</span></button>
+            </div>
+            <div className="bg-desc">{bg.desc}</div>
+            <div className="bg-divider" />
+            <div className="bg-feature-label">Feature · {bg.feature}</div>
+            <div className="bg-feature-desc">{bg.featureDesc}</div>
           </div>
-          <div className="bg-desc">{bg.desc}</div>
-          <div className="bg-divider" />
-          <div className="bg-feature-label">Feature · {bg.feature}</div>
-          <div className="bg-feature-desc">{bg.featureDesc}</div>
         </div>
       </div>
 
