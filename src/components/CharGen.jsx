@@ -132,11 +132,12 @@ export default function CharGen({ initialName = '', initialClass = CLASSES[0], o
       const ideal = pick(bg.ideal)
       const bond = pick(bg.bond)
       const flaw = pick(bg.flaw)
+      const specialty = bg.specialty ? pick(bg.specialty) : null
       const traitEquip = [personality, ideal, bond, flaw].flatMap(t => TRAIT_ITEMS.has(t) ? [TRAIT_ITEMS.get(t)] : [])
       return {
         ...prev,
         background: bgKey, bgProfs: bg.profs, profs: allProfs, equip: [...bg.equip, ...traitEquip],
-        personality, ideal, bond, flaw,
+        personality, ideal, bond, flaw, specialty,
         cantrips: finalSpells?.cantrips ?? prev.cantrips,
         spellsKnown: finalSpells?.spells.map(n => ({ name: n, level: 1 })) ?? prev.spellsKnown,
         spellSlots: SLOT_TABLE[cls] ? SLOT_TABLE[cls][0].map(s => ({ ...s, used: 0 })) : prev.spellSlots,

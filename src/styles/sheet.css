@@ -1,5 +1,85 @@
 /* ══ Character Sheet ══ */
 
+/* ── NPC cards ── */
+.npc-card {
+  border-left: 2px solid var(--border);
+  padding: var(--sp-sm) var(--sp-md);
+  margin-bottom: var(--sp-sm);
+}
+.npc-disp-hostile  { border-left-color: #fca5a5; }
+.npc-disp-wary     { border-left-color: #fcd34d; }
+.npc-disp-neutral  { border-left-color: var(--text-tertiary); }
+.npc-disp-friendly { border-left-color: #86efac; }
+.npc-disp-allied   { border-left-color: var(--accent); }
+.npc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-sm);
+}
+.npc-name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.npc-disposition {
+  font-size: var(--fs-xs);
+  font-family: var(--font-display);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+}
+.npc-disp-hostile  .npc-disposition { color: #fca5a5; }
+.npc-disp-wary     .npc-disposition { color: #fcd34d; }
+.npc-disp-neutral  .npc-disposition { color: var(--text-tertiary); }
+.npc-disp-friendly .npc-disposition { color: #86efac; }
+.npc-disp-allied   .npc-disposition { color: var(--accent); }
+.npc-role {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 2px;
+}
+.npc-location {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.npc-notes { margin-top: var(--sp-xs); }
+.npc-note {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Combat block ── */
+.npc-combat-block {
+  border: 1px solid var(--border);
+  padding: var(--sp-sm) var(--sp-md);
+  margin-bottom: var(--sp-md);
+}
+.npc-combat-name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-bottom: var(--sp-xs);
+}
+.npc-combat-stats {
+  display: flex;
+  gap: var(--sp-md);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-sm);
+}
+.npc-combat-actions { display: flex; flex-direction: column; gap: 2px; }
+.npc-combat-action {
+  display: flex;
+  gap: var(--sp-sm);
+  font-size: var(--fs-xs);
+  align-items: baseline;
+}
+.npc-action-name { color: var(--text); }
+.npc-action-bonus { color: var(--text-tertiary); }
+.npc-action-dmg { color: #fca5a5; }
+
 /* Stat grid */
 .stat-grid,
 .grid-3,
@@ -295,10 +375,27 @@
 .bg-desc,
 .ps-bg-desc {
   margin-bottom: var(--sp-sm);
-  min-height: calc(var(--fs-base) * 1.5 * 5.5);
 }
-.ps-bg-desc {
-  min-height: 0;
+.ps-bio-text {
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: var(--sp-sm);
+}
+.ps-bio-loading {
+  color: var(--text-inactive);
+  font-style: italic;
+}
+.ps-bio-retry {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--accent-primary);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .sc-desc {
   font-size: var(--fs-sm);

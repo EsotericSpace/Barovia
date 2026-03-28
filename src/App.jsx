@@ -40,6 +40,19 @@ function patchCharacter(c) {
     result = { ...result, classFeatures: getClassFeatureMax(result.class, result.stats, result.level ?? 1, result.subclass) }
   }
 
+  if (result.npcs) {
+    result = {
+      ...result,
+      npcs: Object.fromEntries(
+        Object.entries(result.npcs).map(([name, val]) =>
+          typeof val === 'string'
+            ? [name, { disposition: val, pendingDisposition: null, role: null, location: null, notes: [] }]
+            : [name, val]
+        )
+      ),
+    }
+  }
+
   return result
 }
 
@@ -131,6 +144,7 @@ export default function App() {
           setCharacter(prev => typeof updater === 'function' ? updater(prev) : updater)
         }}
         onExit={() => setPhase('landing')}
+        settingsSlot={<SettingsButton {...settingsProps} />}
       />
     )
   })()
@@ -138,7 +152,7 @@ export default function App() {
   return (
     <>
       {screen}
-      {phase !== 'chargen' && (
+      {phase !== 'chargen' && phase !== 'play' && (
         <SettingsButton {...settingsProps} className="app-settings" />
       )}
     </>

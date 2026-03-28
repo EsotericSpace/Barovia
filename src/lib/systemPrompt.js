@@ -35,6 +35,7 @@ export function buildSystemPrompt(character) {
     inventory,
     conditions,
     subclass,
+    companions,
   } = character;
   const bg = BACKGROUNDS[background];
   const classNarrative = CLASS_CONFIG[cls]?.narrative ?? "";
@@ -69,6 +70,50 @@ export function buildSystemPrompt(character) {
     ? Object.entries(cfMax).map(([k, max]) => `${getFeatureLabel(k, subclass) ?? CLASS_FEATURE_LABELS[k] ?? k}: ${cf[k] ?? max}/${max}`).join(' | ')
     : null
   const scDmNotes = subclass && subclassActive ? (SUBCLASS_CONFIG[subclass]?.dmNotes ?? null) : null
+
+  const statFlavor = [
+    stats.charisma >= 14
+      ? 'High CHA — NPCs warm to them faster than expected; there is something magnetic or striking about their presence that others register without quite naming.'
+      : stats.charisma <= 8
+      ? 'Low CHA — something about them makes others subtly uneasy; trust comes slower, first impressions run cold, people find excuses not to hold eye contact.'
+      : null,
+    stats.strength >= 14
+      ? 'High STR — visibly powerful build; strangers instinctively recalibrate when they enter a room, blacksmiths and soldiers clock it immediately.'
+      : stats.strength <= 8
+      ? 'Low STR — slight or soft frame; not physically imposing, others do not expect much from them in a fight and may say so.'
+      : null,
+    stats.constitution >= 14
+      ? 'High CON — carries hardship without showing it; cold, hunger, and exhaustion sit on them lightly in ways that quietly impress Barovians.'
+      : stats.constitution <= 8
+      ? 'Low CON — shows wear early; hollow under the eyes, a persistent cough perhaps, the kind of fragility Barovia tends to notice and exploit.'
+      : null,
+  ].filter(Boolean)
+
+  const DISPOSITION_LABEL = { hostile: '⚔ hostile', wary: '~ wary', neutral: '◦ neutral', friendly: '○ friendly', allied: '★ allied' }
+  const npcsBlock = (() => {
+    const entries = Object.entries(character.npcs ?? {})
+    if (!entries.length) return null
+    return entries.map(([name, val]) => {
+      const npc = typeof val === 'object' ? val : { disposition: val }
+      const effectiveDisp = npc.pendingDisposition ?? npc.disposition
+      const pending = npc.pendingDisposition ? ' (updating this scene — not yet confirmed)' : ''
+      const loc = npc.location ? ` | last seen: ${LOCATIONS[npc.location]?.name ?? npc.location}` : ''
+      const role = npc.role ? `\n  ${npc.role}` : ''
+      const notes = npc.notes?.length ? npc.notes.map(n => `\n  · ${n}`).join('') : ''
+      return `${name} — ${DISPOSITION_LABEL[effectiveDisp] ?? effectiveDisp}${pending}${loc}${role}${notes}`
+    }).join('\n')
+  })()
+
+  const rawNotes = character.notes ?? []
+  const notesBlock = (() => {
+    if (!rawNotes.length) return null
+    const lines = rawNotes.map(n =>
+      `· Day ${n.day}${n.location ? ` · ${LOCATIONS[n.location]?.name ?? n.location}` : ''}: ${n.text}`
+    )
+    // Trim oldest notes if total exceeds 2000 chars
+    while (lines.join('\n').length > 2000 && lines.length > 1) lines.shift()
+    return lines.join('\n')
+  })()
 
   const activeConditions = (conditions ?? []).length
     ? (conditions ?? [])
@@ -153,15 +198,15 @@ ${UNCERTAINTY}
 ${name} | ${cls}${subclass ? ` (${subclass})` : ""} | ${background} | Level ${character.level ?? 1}${subclass && !subclassActive ? ` — subclass unlocks at level ${subclassLevel}` : ""}
 ${statLine} | HP ${hp ?? maxHp}/${maxHp} | AC ${ac} | Day ${character.day ?? 1}
 Proficiencies: ${profs?.join(", ")}${expertise?.length ? ` | Expertise: ${expertise.join(", ")}` : ""}${character.stProfs?.length ? ` | Saves: ${character.stProfs.map(s => SA[s] ?? s.toUpperCase()).join(", ")}` : ""}
-Background: ${bg?.desc}
+Background: ${bg?.desc}${character.specialty ? `\n${bg?.specialtyLabel ?? 'Specialty'}: ${character.specialty}` : ''}
 Background Feature — ${bg?.feature}: ${bg?.featureDesc}
 Personality: ${personality}
 Ideal: ${ideal} | Bond: ${bond} | Flaw: ${flaw}
-Inventory: ${inv}${spellLine ? `\n${spellLine}` : ""}${cfLine ? `\nClass features: ${cfLine}` : ""}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ""}
+Inventory: ${inv}${spellLine ? `\n${spellLine}` : ""}${cfLine ? `\nClass features: ${cfLine}` : ""}${companions?.length ? `\nCompanions: ${companions.join(', ')}` : ""}${activeConditions ? `\nActive conditions:\n${activeConditions}` : ""}
 
 ${cls}: ${classNarrative}${subclass && subclassActive ? `\n${subclass}: ${subclassDesc}` : ""}${scDmNotes ? `\n${scDmNotes}` : ""}
 
-Honor their class, background, and personality. The background feature (${bg?.feature}) should come up naturally — don't announce it, just use it. Press on their flaw and bond — Barovia finds every wound.
+${npcsBlock ? `Known NPCs:\n${npcsBlock}\n\n` : ''}${notesBlock ? `Session memory:\n${notesBlock}\n\n` : ''}Honor their class, background, and personality. The background feature (${bg?.feature}) should come up naturally — don't announce it, just use it. Press on their flaw and bond — Barovia finds every wound.${statFlavor.length ? `\n${statFlavor.join(' ')}` : ''} These are tendencies for NPC behaviour — do not announce them or have characters comment on them directly; let them surface through how people act.
 </character>
 
 ${OOC}
@@ -198,7 +243,8 @@ ${FORMATTING}
 Append these tags SILENTLY at the very end of your response, after all narrative (the app strips them, the player never sees them):
 - Hostile creature present: [MONSTER:slug] using dnd5eapi.co slugs e.g. wolf, zombie, skeleton, shadow, ghoul, ghast, wight, specter, wraith, banshee, vampire, werewolf, swarm-of-bats, will-o-wisp, revenant — fire [ENDCOMBAT] when the encounter ends (creature defeated, fled, or resolved without violence)
 - Item gained: [ITEM:+name] | Item lost/used: [ITEM:-name]
-- Enemy attack hits: [DAMAGE:XdY+Z] using the monster's damage dice from its stat block (e.g. [DAMAGE:2d6+3] for a longsword attack). The app rolls the dice, applies the result to HP, and returns the result to you — then narrate the hit landing and its severity. Do NOT pre-narrate the outcome before the result returns. Emit the tag before any narration of the hit.
+- Enemy attack roll: [ATTACK:+N] using the monster's attack bonus from its stat block (e.g. [ATTACK:+4]). The app rolls d20+N against the character's AC and returns HIT or MISS. If a hit, follow with [DAMAGE:XdY+Z] in your next response. If a miss, narrate accordingly. Do not pre-narrate the outcome. Emit before any description of the attack landing.
+- Enemy attack damage (after a confirmed hit): [DAMAGE:XdY+Z] using the monster's damage dice (e.g. [DAMAGE:2d6+3]). The app rolls the dice, applies the result to HP, and returns the damage total — then narrate the hit landing and its severity.
 - HP change (non-attack sources — traps, poison, healing spells, potions): [STAT:hp:+N] to heal or [STAT:hp:-N] to damage. The app clamps to 0–maxHP automatically.
 - Ability check or skill check (known DC): [ROLL:skillname:dc] or [ROLL:skillname:dc:adv] or [ROLL:skillname:dc:dis] — app auto-rolls d20 + skill modifier (includes proficiency and expertise where applicable). Skill names: athletics, acrobatics, stealth, arcana, history, investigation, nature, religion, animal_handling, insight, medicine, perception, survival, deception, intimidation, performance, persuasion. Raw ability checks: strength, dexterity, constitution, intelligence, wisdom, charisma (no proficiency applied).
 - Saving throw (known DC): [SAVE:ability:dc] or [SAVE:ability:dc:adv] or [SAVE:ability:dc:dis] — app auto-rolls d20 + save modifier (applies class save proficiency if the character has it). Use this for all saving throws. Ability names: strength, dexterity, constitution, intelligence, wisdom, charisma. The character's save proficiencies are listed in the character block under "Saves".
@@ -217,6 +263,11 @@ Append these tags SILENTLY at the very end of your response, after all narrative
 - Tarokka lair re-read: [TAROKKA:lair] — fire when Eva re-reads Strahd's lair location (only available 3+ days after the original reading; the app will note this in the prophecy block when eligible). Draws a new lair card, always different from the current one.
 - Tarokka reading: [TAROKKA] — fire once when Madam Eva performs the reading. The app draws the cards; narrate the results dramatically. Artifact locations and the ally are fixed from that point forward and will appear in your context on every subsequent turn. Do not fire if a reading has already been done.
 - Artifact collected: [ARTIFACT:tome] | [ARTIFACT:holysymbol] | [ARTIFACT:sunsword] — fire when the party recovers one of the three artifacts. The artifact's location in your context will update to "FOUND — in party's possession." Do not continue directing the party toward a found artifact.
+- Track NPC disposition: [NPC:Full Name:disposition] where disposition is one of: hostile, wary, neutral, friendly, allied. Fire when the player first meets a named NPC, and again when their disposition meaningfully shifts. Use the NPC's full name consistently (e.g. [NPC:Ireena Kolyana:friendly]). Disposition updates are held as pending until the scene resolves (location change or end of combat) — the current pending state is shown in your context.
+- Set NPC role: [NPC:Full Name:role:one sentence describing who they are and their relationship to the player] — fire once on first meeting. E.g. [NPC:Ismark Kolyanovich:role:Ireena's brother. Wants the player to escort her safely to Vallaki.]
+- Add NPC note: [NPC:Full Name:note:fact] — fire when something specific and lasting is true about this NPC's relationship with the player. E.g. [NPC:Baron Vallakovich:note:Believes the player is a travelling merchant — has not seen through the lie.] where disposition is one of: hostile, wary, neutral, friendly, allied. Fire when the player first meets a named NPC, and again when their disposition meaningfully shifts. Use the NPC's full name consistently (e.g. [NPC:Ireena Kolyana:friendly], [NPC:Strahd von Zarovich:hostile]). Known NPCs and their current dispositions are shown in your character context — update rather than re-set when things change.
+- Persist a key fact: [REMEMBER:text] — fire when something happens that should affect future scenes: first meeting an NPC and their initial disposition, a significant relationship shift, a lie or deception the player used, a promise made or broken, an alliance formed, a secret learned, a decision with lasting consequences. Write it as a plain statement of fact ("Ireena knows the player is not a local. She is cautious but grateful." / "The player told the Baron they were a travelling merchant — lie."). Do not fire for routine narration. Fire at most once or twice per scene, only for genuinely memorable facts.
+- Companion joined: [COMPANION:+Name] — fire when a named NPC joins the party as an active companion (other than the tarokka ally, which uses [ALLY:active]). Use their proper name (e.g. [COMPANION:+Ireena]). Fire [COMPANION:-Name] when they leave, are separated, or die.
 - Ally joined: [ALLY:active] — fire when the party's tarokka-designated ally commits to traveling with them. The ally's entry will update to "ACTIVE COMPANION" in your context. Treat them as a present companion with their own voice and limits from that point forward.
 - Location change: [LOCATION:slug] — fire when the party arrives at a new named location. Valid slugs: ${locationSlugs}. Fire this before any milestone that belongs to that location — the app uses it to validate milestone eligibility.
 - Milestone reached: fire the corresponding tag when the condition is genuinely met. Each milestone can only be awarded once — the app ignores duplicates. Do not fire a milestone that is already in the reached list. Milestones already reached: ${hitMilestones}.
@@ -234,6 +285,31 @@ ${MAGIC_RULES}
 ${EPILOGUE}
 
 Open on the moment the mists release the player into Barovia. Their last memory: ${lastMemory} Atmosphere first, one decision point, no info-dump. Begin now.`;
+}
+
+export function buildBackstoryPrompt(character) {
+  const { name, class: cls, subclass, background, stats, personality, ideal, specialty } = character
+  const statNotes = [
+    stats.charisma >= 14 ? 'magnetic presence' : stats.charisma <= 8 ? 'difficult to warm to' : null,
+    stats.strength >= 14 ? 'physically powerful' : stats.strength <= 8 ? 'not physically imposing' : null,
+    stats.constitution >= 14 ? 'weathers hardship easily' : stats.constitution <= 8 ? 'shows wear quickly' : null,
+  ].filter(Boolean).join(', ')
+
+  return `Write a four-sentence biography for a D&D character in second person. Follow this structure exactly:
+1. Who they are and where they come from.
+2. How they moved through the world — their manner, their reputation, what others saw.
+3. What drove them.
+4. What they could not leave behind.
+
+No em dashes. No headers. Just four sentences.
+
+Example:
+You spent a decade as a sellsword for a Waterdeep merchant house, long enough to learn that loyalty is a commodity and the people who buy it rarely deserve it. You are not large, but you move like something that has decided to take up more space than it was given, and strangers step aside without knowing why. What you wanted was simple: enough coin to stop needing anyone. What followed you was the face of the man you left bleeding in a Baldur's Gate alley, who may or may not have survived, and who you have never gone back to check on.
+
+CHARACTER:
+${name} — ${cls}${subclass ? ` (${subclass})` : ''} | ${background}
+Personality: ${personality}
+Ideal: ${ideal}${specialty ? `\n${BACKGROUNDS[background]?.specialtyLabel ?? 'Specialty'}: ${specialty}` : ''}${statNotes ? `\nPhysical/social texture: ${statNotes}` : ''}`
 }
 
 export function buildTestPrompt(character) {

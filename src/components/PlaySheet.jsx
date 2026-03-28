@@ -4,6 +4,7 @@ import { CLASS_CONFIG } from '../data/classes.js'
 import { CONDITIONS } from '../data/conditions.js'
 import { SPELL_DESCRIPTIONS } from '../data/spells.js'
 import { SUBCLASS_SHORT, BACKGROUND_SHORT, TRAIT_ITEMS } from '../lib/chargen.js'
+import { LOCATIONS } from '../data/locations/index.js'
 
 const TRAIT_ITEM_NAMES = new Set(TRAIT_ITEMS.values())
 
@@ -19,13 +20,13 @@ function Section({ label, open, onToggle, children }) {
   )
 }
 
-export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpdate }) {
+export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpdate, backstoryStatus, onRetryBackstory }) {
   const [tab, setTab] = useState('identity')
   const [open, setOpen] = useState(() => {
     try {
       const saved = localStorage.getItem('barovia_sheet_sections')
-      return saved ? JSON.parse(saved) : { background: false, traits: false, skills: false, inventory: true }
-    } catch { return { background: true, traits: false, skills: false, inventory: false } }
+      return saved ? JSON.parse(saved) : { biography: true, skills: false, inventory: true }
+    } catch { return { biography: true, skills: false, inventory: true } }
   })
   const toggle = key => setOpen(o => {
     const next = { ...o, [key]: !o[key] }
@@ -38,14 +39,20 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
   const profLevel = name => expertise.includes(name) ? 2 : allProfs.includes(name) ? 1 : 0
 
   const hasSpells = !!(character.spellSlots?.length > 0 || character.cantrips?.length > 0)
+  const npcEntries = Object.entries(character.npcs ?? {}).map(([name, val]) => [
+    name, typeof val === 'object' ? val : { disposition: val, notes: [] }
+  ])
+  const DISP_LABEL = { hostile: 'Hostile', wary: 'Wary', neutral: 'Neutral', friendly: 'Friendly', allied: 'Allied' }
   const tabs = [
     { key: 'identity', label: 'Identity' },
-    { key: 'stats', label: 'Stats' },
     ...(hasSpells ? [{ key: 'spells', label: 'Spells' }] : []),
+    { key: 'stats', label: 'Stats' },
+    ...(npcEntries.length > 0 ? [{ key: 'people', label: 'People' }] : []),
   ]
 
   return (
     <div className="panel play-sheet">
+    <div className="play-sheet-inner">
 
       <div className="chargen-header">
         <div className="cg-header-left">
@@ -76,6 +83,39 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
 
         {tab === 'identity' && (
           <div className="cg-col">
+
+            <Section label="Biography" open={open.biography} onToggle={() => toggle('biography')}>
+              <div className="ps-bg-block">
+                <div className="ps-bg-inner">
+                  {character.backstory
+                    ? <div className="ps-bio-text">{character.backstory}</div>
+                    : backstoryStatus === 'error'
+                      ? <button className="ps-bio-retry" onClick={onRetryBackstory}>Failed to generate · Retry</button>
+                      : <div className="ps-bg-desc ps-bio-loading">Generating…</div>
+                  }
+                  {bg && <>
+                    <div className="ps-divider" />
+                    <div className="ps-feature-label">Feature · {bg.feature}</div>
+                    <div className="ps-feature-desc">{bg.featureDesc}</div>
+                  </>}
+                </div>
+              </div>
+            </Section>
+
+            <Section label="Skills" open={open.skills} onToggle={() => toggle('skills')}>
+              <div className="skill-inline">
+                {SKILLS.filter(s => profLevel(s.name) > 0).map((s, i, arr) => {
+                  const expert = profLevel(s.name) === 2
+                  const val = skillMod(s.name, character.stats, allProfs, expertise, character.profBonus ?? PROF_BONUS)
+                  const valStr = val >= 0 ? `+${val}` : `${val}`
+                  return (
+                    <span key={s.name} className={`skill-inline-item${expert ? ' expert' : ''}`}>
+                      {s.name} ({valStr}){expert ? ' ★' : ''}{i < arr.length - 1 ? ',' : ''}
+                    </span>
+                  )
+                })}
+              </div>
+            </Section>
 
             <Section label="Inventory" open={open.inventory} onToggle={() => toggle('inventory')}>
               {character.inventory.length === 0
@@ -127,45 +167,63 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
               }
             </Section>
 
-            <Section label="Character Traits" open={open.traits} onToggle={() => toggle('traits')}>
-              <div className="ps-trait-list">
-                {[['personality', 'Personality'], ['ideal', 'Ideal'], ['bond', 'Bond'], ['flaw', 'Flaw']].map(([key, label]) => (
-                  <div key={key} className={`ps-trait${key === 'flaw' ? ' flaw' : ''}`}>
-                    <div className="ps-trait-label">{label}</div>
-                    <div className="ps-trait-text">{character[key]}</div>
+          </div>
+        )}
+
+        {tab === 'people' && (
+          <div className="cg-col">
+
+            {character.activeMonster && (() => {
+              const m = character.activeMonster
+              const ac = Array.isArray(m.armor_class) ? m.armor_class[0]?.value : m.armor_class
+              const attacks = (m.actions ?? []).filter(a => a.attack_bonus != null || a.damage?.length)
+              return (
+                <div>
+                  <div className="ps-section-header">In Combat</div>
+                  <div className="npc-combat-block">
+                    <div className="npc-combat-name">{m.name}</div>
+                    <div className="npc-combat-stats">
+                      <span>HP {m.hit_points}</span>
+                      <span>AC {ac}</span>
+                    </div>
+                    {attacks.length > 0 && (
+                      <div className="npc-combat-actions">
+                        {attacks.map((a, i) => (
+                          <div key={i} className="npc-combat-action">
+                            <span className="npc-action-name">{a.name}</span>
+                            {a.attack_bonus != null && <span className="npc-action-bonus">+{a.attack_bonus} to hit</span>}
+                            {a.damage?.[0] && <span className="npc-action-dmg">{a.damage[0].damage_dice} {a.damage[0].damage_type?.name}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
+
+            {npcEntries.length === 0 ? (
+              <div className="ps-inv-empty">No named characters encountered yet.</div>
+            ) : (
+              <div>
+                <div className="ps-section-header">Characters Met</div>
+                {npcEntries.map(([name, npc]) => (
+                  <div key={name} className={`npc-card npc-disp-${npc.pendingDisposition ?? npc.disposition}`}>
+                    <div className="npc-header">
+                      <span className="npc-name">{name}</span>
+                      <span className="npc-disposition">{DISP_LABEL[npc.pendingDisposition ?? npc.disposition] ?? npc.disposition}</span>
+                    </div>
+                    {npc.role && <div className="npc-role">{npc.role}</div>}
+                    {npc.location && <div className="npc-location">Last seen: {LOCATIONS[npc.location]?.name ?? npc.location}</div>}
+                    {npc.notes?.length > 0 && (
+                      <div className="npc-notes">
+                        {npc.notes.map((note, i) => <div key={i} className="npc-note">· {note}</div>)}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-            </Section>
-
-            <Section label="Skills" open={open.skills} onToggle={() => toggle('skills')}>
-              <div className="skill-inline">
-                {SKILLS.filter(s => profLevel(s.name) > 0).map((s, i, arr) => {
-                  const expert = profLevel(s.name) === 2
-                  const val = skillMod(s.name, character.stats, allProfs, expertise, character.profBonus ?? PROF_BONUS)
-                  const valStr = val >= 0 ? `+${val}` : `${val}`
-                  return (
-                    <span key={s.name} className={`skill-inline-item${expert ? ' expert' : ''}`}>
-                      {s.name} ({valStr}){expert ? ' ★' : ''}{i < arr.length - 1 ? ',' : ''}
-                    </span>
-                  )
-                })}
-              </div>
-            </Section>
-
-            <Section label="Background" open={open.background} onToggle={() => toggle('background')}>
-              <div className="ps-bg-block">
-                <div className="ps-bg-inner">
-                  <div className="ps-bg-name">{character.background}</div>
-                  {bg && <>
-                    <div className="ps-bg-desc">{bg.desc}</div>
-                    <div className="ps-divider" />
-                    <div className="ps-feature-label">Feature · {bg.feature}</div>
-                    <div className="ps-feature-desc">{bg.featureDesc}</div>
-                  </>}
-                </div>
-              </div>
-            </Section>
+            )}
 
           </div>
         )}
@@ -359,6 +417,7 @@ export default function PlaySheet({ character, bg, setSheetOpen, onCharacterUpda
 
       </div>
 
+    </div>
     </div>
   )
 }

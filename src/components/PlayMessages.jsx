@@ -106,6 +106,47 @@ export default function PlayMessages({ msgs, loading, latestRef, onRollPrompt })
           )
         }
 
+        if (m.role === 'attack') return (
+          <div key={m.id} className="rollcard">
+            <div className="rollcard-inner">
+              <div className="roll-total-wrap">
+                <div className={`roll-total ${m.hit ? 'roll-color-success' : 'roll-color-fail'}`}>{m.total}</div>
+              </div>
+              <div>
+                <div className="roll-skill-dc">Attack · vs AC {m.ac}</div>
+                <div className={`roll-result ${m.hit ? 'roll-color-success' : 'roll-color-fail'}`}>{m.hit ? 'Hit' : 'Miss'}</div>
+              </div>
+              <div className="tipwrap roll-tip">
+                ⓘ<span className="tip">d20({m.d20}){m.bonus >= 0 ? '+' : ''}{m.bonus} = {m.total}{m.adv === 'dis' ? ' · dis' : ''}</span>
+              </div>
+            </div>
+          </div>
+        )
+
+        if (m.role === 'heal') return (
+          <div key={m.id} className="rollcard">
+            <div className="rollcard-inner">
+              <div className="roll-total-wrap">
+                <div className="roll-total roll-color-success">+{m.amount}</div>
+              </div>
+              <div>
+                <div className="roll-skill-dc">Healing</div>
+                <div className="roll-result roll-color-success">HP {m.newHp} / {m.maxHp}</div>
+              </div>
+            </div>
+          </div>
+        )
+
+        if (m.role === 'surge') return (
+          <div key={m.id} className="event-card event-card-surge">
+            <div className="event-icon">✦</div>
+            <div>
+              <div className="event-label">Wild Magic Surge · {m.roll}</div>
+              <div className="event-detail">{m.text}</div>
+            </div>
+          </div>
+        )
+
         if (m.role === 'damage') return (
           <div key={m.id} className="rollcard">
             <div className="rollcard-inner">

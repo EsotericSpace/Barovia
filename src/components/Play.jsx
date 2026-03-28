@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { parseTags } from '../lib/parseTags.js'
-import { buildSystemPrompt } from '../lib/systemPrompt.js'
+import { buildSystemPrompt, buildBackstoryPrompt } from '../lib/systemPrompt.js'
 import { BACKGROUNDS } from '../data/backgrounds.js'
 import { SA, SKILL_MAP, rollWithAdv } from '../lib/dnd.js'
 import { createApplyTags } from '../lib/applyTags.js'
@@ -10,7 +10,7 @@ import PlayInput from './PlayInput.jsx'
 import PlaySheet from './PlaySheet.jsx'
 import { loadMsgs, writeMsgs } from '../lib/saves.js'
 
-export default function Play({ character, slotIndex, onCharacterUpdate, onExit }) {
+export default function Play({ character, slotIndex, onCharacterUpdate, onExit, settingsSlot }) {
   const saved = loadMsgs(slotIndex ?? 0)
   const [msgs, setMsgs] = useState(saved?.display ?? [])
   const [input, setInput] = useState('')
@@ -18,6 +18,7 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
   const [sheetOpen, setSheetOpen] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [victory, setVictory] = useState(false)
+  const [backstoryStatus, setBackstoryStatus] = useState(character.backstory ? 'done' : 'loading')
   const histRef   = useRef(saved?.history ?? [])
   const sysRef    = useRef('')
   const latestRef = useRef(null)
@@ -44,16 +45,40 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
   const applyTags = createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVictory })
   const handleTestCommand = createTestCommandHandler({ charRef, onCharacterUpdate, setMsgs, setLoading, applyTags })
 
+  function fetchBackstory(signal) {
+    setBackstoryStatus('loading')
+    return fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: buildBackstoryPrompt(charRef.current), messages: [{ role: 'user', content: 'Write the character concept.' }] }),
+      signal,
+    }).then(r => r.json()).then(d => {
+      if (d.content) {
+        onCharacterUpdate(c => ({ ...c, backstory: d.content }))
+        setBackstoryStatus('done')
+      } else {
+        setBackstoryStatus('error')
+      }
+    }).catch(e => {
+      if (e.name !== 'AbortError') setBackstoryStatus('error')
+    })
+  }
+
   useEffect(() => {
-    if (saved?.display?.length) return
-    sysRef.current = buildSystemPrompt(character)
-    const init = [{ role: 'user', content: 'Begin.' }]
     const ctrl = new AbortController()
-    setLoading(true)
-    callDM(init, ctrl.signal).then(async ({ text, tags }) => {
-      await finishResponse(text, tags, init)
-      setLoading(false)
-    }).catch(() => {})
+
+    if (!character.backstory) fetchBackstory(ctrl.signal)
+
+    if (!saved?.display?.length) {
+      sysRef.current = buildSystemPrompt(character)
+      const init = [{ role: 'user', content: 'Begin.' }]
+      setLoading(true)
+      callDM(init, ctrl.signal).then(async ({ text, tags }) => {
+        await finishResponse(text, tags, init)
+        setLoading(false)
+      }).catch(() => {})
+    }
+
     return () => ctrl.abort()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -69,23 +94,31 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     return parseTags(d.content)
   }
 
-  // After every DM response: apply tags, flush display, then auto-reply if damage was dealt.
+  // After every DM response: apply tags, flush display, then auto-reply for attacks/damage/surges.
   async function finishResponse(text, tags, hist, displayOpts = {}) {
     histRef.current = [...hist, { role: 'assistant', content: text }]
     const buf = [{ role: 'assistant', content: text, id: Date.now() + 'a', ...displayOpts }]
     applyTags(tags, buf)
     setMsgs(p => [...p, ...buf])
 
-    const dmgMsgs = buf.filter(m => m.role === 'damage')
-    if (dmgMsgs.length === 0) return
+    const ctxParts = []
 
-    const dmgCtx = dmgMsgs
-      .map(m => `[Damage dealt: ${m.total}${m.rollStr} from ${m.expr} — HP now ${m.newHp}/${m.maxHp}]`)
-      .join(' ')
-    const dmgHist = [...histRef.current, { role: 'user', content: dmgCtx }]
+    buf.filter(m => m.role === 'attack').forEach(m => {
+      const advNote = m.adv === 'dis' ? ' (disadvantage from condition)' : ''
+      ctxParts.push(`[Attack roll: d20(${m.d20})${m.bonus >= 0 ? '+' : ''}${m.bonus} = ${m.total} vs AC ${m.ac}${advNote} — ${m.hit ? 'HIT' : 'MISS'}]`)
+    })
+    buf.filter(m => m.role === 'damage').forEach(m => {
+      ctxParts.push(`[Damage dealt: ${m.total}${m.rollStr} from ${m.expr} — HP now ${m.newHp}/${m.maxHp}]`)
+    })
+    buf.filter(m => m.role === 'surge').forEach(m => {
+      ctxParts.push(`[Wild Magic Surge — rolled ${m.roll}: ${m.text} Tides of Chaos restored.]`)
+    })
+
+    if (ctxParts.length === 0) return
+    const replyHist = [...histRef.current, { role: 'user', content: ctxParts.join(' ') }]
     sysRef.current = buildSystemPrompt(charRef.current)
-    const { text: t2, tags: tags2 } = await callDM(dmgHist)
-    await finishResponse(t2, tags2, dmgHist, displayOpts)
+    const { text: t2, tags: tags2 } = await callDM(replyHist)
+    await finishResponse(t2, tags2, replyHist, displayOpts)
   }
 
   async function handleRollPrompt(msg) {
@@ -150,24 +183,33 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
 
   const bg = BACKGROUNDS[character.background]
 
+  const isMobile = () => window.matchMedia('(max-width: 640px)').matches
+
   return (
-    <div className="play-page">
+    <div className={`play-page${sheetOpen ? ' sheet-open' : ''}`}>
 
-      <button className="topbar-exit" onClick={sheetOpen && window.matchMedia('(max-width: 640px)').matches ? () => setSheetOpen(false) : onExit}>
-        <span className="material-symbols-outlined">{sheetOpen && window.matchMedia('(max-width: 640px)').matches ? 'close' : 'logout'}</span>
-      </button>
+      <div className="play-main">
+        <div className="play-header">
+          <div className="play-header-left">
+            <button className="topbar-exit" onClick={sheetOpen && isMobile() ? () => setSheetOpen(false) : onExit}>
+              <span className="material-symbols-outlined">{sheetOpen && isMobile() ? 'close' : 'logout'}</span>
+            </button>
+          </div>
+          <span className="play-header-title">Barovia</span>
+          <div className="play-header-right">
+            {settingsSlot}
+            <button className={`play-sheet-toggle shbtn${sheetOpen ? ' open' : ''}`} onClick={() => setSheetOpen(o => !o)}>
+              <span className="material-symbols-outlined">menu_book</span>
+            </button>
+          </div>
+        </div>
 
-      <div className="play-header">
-        <span className="play-header-title">Barovia</span>
+        <PlayMessages msgs={msgs} loading={loading} latestRef={latestRef} onRollPrompt={handleRollPrompt} />
+        <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} sheetOpen={sheetOpen} onToggleSheet={() => setSheetOpen(o => !o)} />
       </div>
 
-      <PlayMessages msgs={msgs} loading={loading} latestRef={latestRef} onRollPrompt={handleRollPrompt} />
-      <PlayInput input={input} setInput={setInput} loading={loading} send={send} onKey={onKey} taRef={taRef} sheetOpen={sheetOpen} onToggleSheet={() => setSheetOpen(o => !o)} />
-
-      {sheetOpen && <>
-        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} />
-        <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} onCharacterUpdate={onCharacterUpdate} />
-      </>}
+      {sheetOpen && isMobile() && <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} />}
+      <PlaySheet character={character} bg={bg} setSheetOpen={setSheetOpen} onCharacterUpdate={onCharacterUpdate} backstoryStatus={backstoryStatus} onRetryBackstory={() => fetchBackstory()} />
 
       {gameOver && (
         <div className="game-over-overlay">

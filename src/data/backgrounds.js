@@ -175,6 +175,15 @@ export const BACKGROUNDS = {
 
   "Haunted One": {
     desc: "You are haunted by something so terrible that you dare not speak of it. You’ve tried to bury it and run away from it, to no avail. The burden has taken its toll, isolating you from most people and making you question your sanity.",
+    specialtyLabel: "Harrowing Event",
+    specialty: [
+      "A monster that slaughtered dozens of innocent people spared your life, and you do not know why.",
+      "You watched someone you loved die at the hands of the undead. Your efforts to save them failed.",
+      "A hag threatened to consume you. You escaped, but she vowed to haunt you for the rest of your days.",
+      "You were the only survivor when darkness took everyone around you, and you still do not know why you were left standing.",
+      "Spirits tormented you for years before you found a way to silence them, at a cost you have never spoken aloud.",
+      "A mentor you trusted was complicit in something monstrous. You barely escaped. You have never told anyone what you saw.",
+    ],
     feature: "Heart of Darkness",
     featureDesc:
       "Those who look into your eyes can see that you have faced unimaginable horror and that you are no stranger to darkness. Commoners will extend you every courtesy and do their utmost to help you and will even take up arms to fight alongside you, should you find yourself facing an enemy alone.",
@@ -349,6 +358,17 @@ export const BACKGROUNDS = {
 
   Sage: {
     desc: "You spent years learning the lore of the multiverse. You scoured manuscripts, memorized spells, and pestered every expert you could find. Your efforts have made you a master in your fields of study.",
+    specialtyLabel: "Specialty",
+    specialty: [
+      "Alchemist",
+      "Astronomer",
+      "Discredited Academic",
+      "Historian",
+      "Librarian",
+      "Occultist",
+      "Philosopher",
+      "Wizard's Apprentice",
+    ],
     feature: "Researcher",
     featureDesc:
       "When you attempt to learn or recall a piece of lore, if you do not know that information, you often know where and from whom you can obtain it. The DM may rule that some lore is simply too obscure or too dangerous to locate easily.",

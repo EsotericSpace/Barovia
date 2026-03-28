@@ -23,6 +23,14 @@ export function parseTags(raw) {
       tags.push({ type: 'surge' })
       return ''
     })
+    .replace(/\[ATTACK:([+-]\d+)\]/g, (_, bonus) => {
+      tags.push({ type: 'attack', bonus: parseInt(bonus) })
+      return ''
+    })
+    .replace(/\[COMPANION:([^\]]+)\]/g, (_, val) => {
+      tags.push({ type: 'companion', val: val.trim() })
+      return ''
+    })
     .replace(/\[ROLL:([^:]+):(\d+)(?::(adv|dis))?\]/g, (_, skill, dc, adv) => {
       tags.push({ type: 'roll', skill: skill.trim(), dc: parseInt(dc), adv: adv ?? null })
       return ''
@@ -101,6 +109,22 @@ export function parseTags(raw) {
     })
     .replace(/\[FEATURE:([^:]+):-(\d+)\]/g, (_, key, n) => {
       tags.push({ type: 'feature', key: key.trim(), delta: -parseInt(n) })
+      return ''
+    })
+    .replace(/\[REMEMBER:([^\]]+)\]/g, (_, text) => {
+      tags.push({ type: 'remember', text: text.trim() })
+      return ''
+    })
+    .replace(/\[NPC:([^:]+):([^:\]]+)(?::([^\]]+))?\]/g, (_, name, subtype, text) => {
+      const dispositions = ['hostile', 'wary', 'neutral', 'friendly', 'allied']
+      const sub = subtype.trim().toLowerCase()
+      if (dispositions.includes(sub)) {
+        tags.push({ type: 'npc', name: name.trim(), disposition: sub })
+      } else if (sub === 'role' && text) {
+        tags.push({ type: 'npc_role', name: name.trim(), role: text.trim() })
+      } else if (sub === 'note' && text) {
+        tags.push({ type: 'npc_note', name: name.trim(), note: text.trim() })
+      }
       return ''
     })
     .trim()

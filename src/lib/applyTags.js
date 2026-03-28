@@ -1,9 +1,10 @@
 import { drawReading, redrawLair } from '../data/tarokka.js'
 import { HD_AVG, profBonus, SLOT_TABLE, SHORT_REST_CASTERS } from '../data/levelup.js'
 import { LOCATIONS } from '../data/locations/index.js'
-import { SA, SKILL_MAP, rollWithAdv, rollModifier, saveModifier, rollDice } from './dnd.js'
+import { SA, SKILL_MAP, rollWithAdv, rollModifier, saveModifier, rollDice, rollD20 } from './dnd.js'
+import { rollSurge } from '../data/wildMagicSurge.js'
 import { getClassFeatureMax, CLASS_FEATURE_RECOVERY } from '../data/classes.js'
-import { getFeatureRecovery } from '../data/subclasses.js'
+import { getFeatureRecovery, SUBCLASS_CONFIG } from '../data/subclasses.js'
 
 const MILESTONE_MAP = Object.fromEntries(
   Object.values(LOCATIONS).flatMap(loc =>
@@ -22,6 +23,22 @@ export const MILESTONE_LOCATIONS = Object.fromEntries(
 )
 
 // Returns an applyTags(tags, buf) function bound to the Play component's context.
+function flushPendingNpcs(c) {
+  if (!c.npcs) return c
+  return {
+    ...c,
+    npcs: Object.fromEntries(
+      Object.entries(c.npcs).map(([name, npc]) => {
+        if (typeof npc === 'object' && npc.pendingDisposition) {
+          const { pendingDisposition, ...rest } = npc
+          return [name, { ...rest, disposition: pendingDisposition }]
+        }
+        return [name, npc]
+      })
+    ),
+  }
+}
+
 export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVictory }) {
   return function applyTags(tags, buf) {
     tags.forEach(t => {
@@ -32,7 +49,7 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
           .catch(() => {})
       }
       if (t.type === 'endcombat') {
-        onCharacterUpdate(c => ({ ...c, activeMonster: null }))
+        onCharacterUpdate(c => flushPendingNpcs({ ...c, activeMonster: null }))
       }
       if (t.type === 'item') {
         const add = t.val.startsWith('+')
@@ -99,7 +116,7 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
         onCharacterUpdate(c => ({ ...c, reading: { ...c.reading, allyActive: true } }))
       }
       if (t.type === 'location') {
-        onCharacterUpdate(c => ({ ...c, currentLocation: t.slug }))
+        onCharacterUpdate(c => flushPendingNpcs({ ...c, currentLocation: t.slug }))
       }
       if (t.type === 'milestone') {
         const already = (charRef.current.milestones ?? []).includes(t.slug)
@@ -208,8 +225,100 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
           return { ...c, classFeatures: { ...c.classFeatures, [t.key]: Math.max(0, cur + t.delta) } }
         })
       }
+      if (t.type === 'surge') {
+        const { roll, entry } = rollSurge()
+        // Restore Tides of Chaos
+        onCharacterUpdate(c => ({
+          ...c,
+          classFeatures: { ...c.classFeatures, tides_of_chaos: 1 },
+        }))
+        // Apply mechanical effect if present
+        if (entry.effect) {
+          const ef = entry.effect
+          if (ef.type === 'hp') onCharacterUpdate(c => ({
+            ...c, hp: Math.max(0, Math.min(c.maxHp, c.hp + ef.val)),
+          }))
+          if (ef.type === 'condition') onCharacterUpdate(c => ({
+            ...c, conditions: [...new Set([...(c.conditions ?? []), ef.key])],
+          }))
+          if (ef.type === 'spellslot') onCharacterUpdate(c => {
+            if (!Array.isArray(c.spellSlots)) return c
+            const idx = [...c.spellSlots].reverse().findIndex(s => (s.used ?? 0) > 0)
+            if (idx === -1) return c
+            const realIdx = c.spellSlots.length - 1 - idx
+            return { ...c, spellSlots: c.spellSlots.map((s, i) => i === realIdx ? { ...s, used: Math.max(0, (s.used ?? 0) - 1) } : s) }
+          })
+          if (ef.type === 'sorcery') onCharacterUpdate(c => {
+            const max = getClassFeatureMax(c.class, c.stats, c.level ?? 1, c.subclass)
+            return { ...c, classFeatures: { ...c.classFeatures, sorcery_points: max.sorcery_points ?? 0 } }
+          })
+        }
+        buf.push({ role: 'surge', id: 'surge-' + Date.now(), roll, text: entry.text, effect: entry.effect })
+      }
+      if (t.type === 'attack') {
+        const c = charRef.current
+        const conds = c.conditions ?? []
+        const condDis = conds.some(k => ['blinded', 'frightened', 'poisoned', 'restrained'].includes(k))
+        const effectiveAdv = condDis && !t.adv ? 'dis' : (t.adv ?? null)
+        const d20 = rollD20()
+        const total = d20 + t.bonus
+        const hit = total >= (c.ac ?? 10)
+        buf.push({
+          role: 'attack', id: 'atk-' + Date.now() + Math.random(),
+          d20, bonus: t.bonus, total, ac: c.ac, hit, adv: effectiveAdv,
+        })
+      }
+      if (t.type === 'npc') {
+        onCharacterUpdate(c => {
+          const existing = c.npcs?.[t.name]
+          const prev = typeof existing === 'object' ? existing : { disposition: existing ?? 'neutral', notes: [] }
+          return {
+            ...c,
+            npcs: {
+              ...(c.npcs ?? {}),
+              [t.name]: { ...prev, pendingDisposition: t.disposition, location: c.currentLocation ?? prev.location ?? null },
+            },
+          }
+        })
+      }
+      if (t.type === 'npc_role') {
+        onCharacterUpdate(c => {
+          const existing = c.npcs?.[t.name]
+          const prev = typeof existing === 'object' ? existing : { disposition: existing ?? 'neutral', notes: [] }
+          return { ...c, npcs: { ...(c.npcs ?? {}), [t.name]: { ...prev, role: t.role } } }
+        })
+      }
+      if (t.type === 'npc_note') {
+        onCharacterUpdate(c => {
+          const existing = c.npcs?.[t.name]
+          const prev = typeof existing === 'object' ? existing : { disposition: existing ?? 'neutral', notes: [] }
+          const notes = prev.notes ?? []
+          if (notes.includes(t.note)) return c
+          return { ...c, npcs: { ...(c.npcs ?? {}), [t.name]: { ...prev, notes: [...notes, t.note] } } }
+        })
+      }
+      if (t.type === 'remember') {
+        const c = charRef.current
+        const note = {
+          text: t.text,
+          day: c.day ?? 1,
+          location: c.currentLocation ?? null,
+        }
+        onCharacterUpdate(ch => ({ ...ch, notes: [...(ch.notes ?? []), note] }))
+      }
+      if (t.type === 'companion') {
+        const add = t.val.startsWith('+')
+        const name = t.val.slice(1).trim()
+        onCharacterUpdate(c => ({
+          ...c,
+          companions: add
+            ? [...new Set([...(c.companions ?? []), name])]
+            : (c.companions ?? []).filter(n => n !== name),
+        }))
+      }
       if (t.type === 'save') {
-        const { ability, modifier, proficient } = saveModifier(t.ability, charRef.current)
+        const c = charRef.current
+        const { ability, modifier, proficient } = saveModifier(t.ability, c)
         const { kept, dropped } = rollWithAdv(t.adv)
         const total = kept + modifier
         buf.unshift({
@@ -232,17 +341,28 @@ export function createApplyTags({ charRef, onCharacterUpdate, setGameOver, setVi
         })
       }
       if (t.type === 'roll') {
-        const { ability, modifier, proficient, expert } = rollModifier(t.skill, charRef.current)
-        const { kept, dropped } = rollWithAdv(t.adv)
+        const c = charRef.current
+        const conds = c.conditions ?? []
+        const condDis = conds.some(k => ['frightened', 'poisoned'].includes(k))
+        const effectiveAdv = condDis && !t.adv ? 'dis' : (t.adv ?? null)
+        const { ability, modifier, proficient, expert } = rollModifier(t.skill, c)
+        const { kept, dropped } = rollWithAdv(effectiveAdv)
         const total = kept + modifier
         buf.unshift({
           role: 'roll', id: 'roll-' + Date.now() + Math.random(),
-          d20: kept, dropped, adv: t.adv, modifier, total, dc: t.dc,
+          d20: kept, dropped, adv: effectiveAdv, modifier, total, dc: t.dc,
           skill: t.skill.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
           ability: SA[ability] || ability.toUpperCase(),
           success: total >= t.dc,
           proficient, expert,
+          conditionNote: condDis && !t.adv ? 'dis from condition' : null,
         })
+      }
+      if (t.type === 'hp' && t.val > 0) {
+        // Healing visual card
+        const c = charRef.current
+        const newHp = Math.min(c.maxHp, c.hp + t.val)
+        buf.push({ role: 'heal', id: 'heal-' + Date.now(), amount: t.val, newHp, maxHp: c.maxHp })
       }
     })
   }

@@ -9,7 +9,7 @@ export default function PlayInput({ input, setInput, loading, send, onKey, taRef
         onChange={e => {
           setInput(e.target.value)
           e.target.style.height = 'auto'
-          e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+          e.target.style.height = Math.min(e.target.scrollHeight, window.innerHeight * 0.25) + 'px'
         }}
         onKeyDown={onKey}
         placeholder="What do you do..."
@@ -19,7 +19,7 @@ export default function PlayInput({ input, setInput, loading, send, onKey, taRef
         className={`play-textarea${isOOC ? ' ooc' : ''}`}
       />
       <button
-        className={`play-sheet-toggle shbtn${sheetOpen ? ' open' : ''}`}
+        className={`play-sheet-toggle play-sheet-toggle-mobile shbtn${sheetOpen ? ' open' : ''}`}
         onClick={onToggleSheet}
       >
         <span className="material-symbols-outlined">menu_book</span>
