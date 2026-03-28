@@ -1,3 +1,5 @@
+import { SUBCLASS_CONFIG } from './subclasses.js'
+
 export const CLASS_CONFIG = {
   Barbarian: {
     blurb: 'Rage is your oldest truth, louder than fear, older than reason. Where others falter beneath Barovia\'s dread, you meet it with something it has never faced: something that does not know how to stop.',
@@ -254,7 +256,7 @@ export const CLASS_FEATURE_RECOVERY = {
   arcane_recovery:    'longrest',
 }
 
-export function getClassFeatureMax(cls, stats, level) {
+export function getClassFeatureMax(cls, stats, level, subclass) {
   const chaMod = Math.floor(((stats?.charisma ?? 10) - 10) / 2)
   const f = {}
   switch (cls) {
@@ -289,6 +291,10 @@ export function getClassFeatureMax(cls, stats, level) {
       break
     default:
       break
+  }
+  if (subclass) {
+    const sc = SUBCLASS_CONFIG[subclass]
+    if (sc) Object.assign(f, sc.features(level, stats))
   }
   return f
 }

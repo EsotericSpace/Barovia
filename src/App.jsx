@@ -37,7 +37,7 @@ function patchCharacter(c) {
   }
 
   if (!result.classFeatures) {
-    result = { ...result, classFeatures: getClassFeatureMax(result.class, result.stats, result.level ?? 1) }
+    result = { ...result, classFeatures: getClassFeatureMax(result.class, result.stats, result.level ?? 1, result.subclass) }
   }
 
   return result
@@ -114,7 +114,7 @@ export default function App() {
             deathSaves: { successes: 0, failures: 0 },
             day: 1,
             reading: { ...drawReading(), readingDay: 1, revealed: false },
-            classFeatures: getClassFeatureMax(sheet.class, sheet.stats, 1),
+            classFeatures: getClassFeatureMax(sheet.class, sheet.stats, 1, sheet.subclass),
           })
           setPhase('play')
         }}

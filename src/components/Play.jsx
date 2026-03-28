@@ -50,11 +50,8 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     const init = [{ role: 'user', content: 'Begin.' }]
     const ctrl = new AbortController()
     setLoading(true)
-    callDM(init, ctrl.signal).then(({ text, tags }) => {
-      histRef.current = [...init, { role: 'assistant', content: text }]
-      const buf = [{ role: 'assistant', content: text, id: 'open' }]
-      applyTags(tags, buf)
-      setMsgs(buf)
+    callDM(init, ctrl.signal).then(async ({ text, tags }) => {
+      await finishResponse(text, tags, init)
       setLoading(false)
     }).catch(() => {})
     return () => ctrl.abort()
@@ -70,6 +67,25 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     const d = await r.json()
     if (d.error) throw new Error(d.error)
     return parseTags(d.content)
+  }
+
+  // After every DM response: apply tags, flush display, then auto-reply if damage was dealt.
+  async function finishResponse(text, tags, hist, displayOpts = {}) {
+    histRef.current = [...hist, { role: 'assistant', content: text }]
+    const buf = [{ role: 'assistant', content: text, id: Date.now() + 'a', ...displayOpts }]
+    applyTags(tags, buf)
+    setMsgs(p => [...p, ...buf])
+
+    const dmgMsgs = buf.filter(m => m.role === 'damage')
+    if (dmgMsgs.length === 0) return
+
+    const dmgCtx = dmgMsgs
+      .map(m => `[Damage dealt: ${m.total}${m.rollStr} from ${m.expr} — HP now ${m.newHp}/${m.maxHp}]`)
+      .join(' ')
+    const dmgHist = [...histRef.current, { role: 'user', content: dmgCtx }]
+    sysRef.current = buildSystemPrompt(charRef.current)
+    const { text: t2, tags: tags2 } = await callDM(dmgHist)
+    await finishResponse(t2, tags2, dmgHist, displayOpts)
   }
 
   async function handleRollPrompt(msg) {
@@ -92,10 +108,7 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     const newHist = [...histRef.current, { role: 'user', content: resultText }]
     try {
       const { text, tags } = await callDM(newHist)
-      histRef.current = [...newHist, { role: 'assistant', content: text }]
-      const buf = [{ role: 'assistant', content: text, id: Date.now() + 'a' }]
-      applyTags(tags, buf)
-      setMsgs(p => [...p, ...buf])
+      await finishResponse(text, tags, newHist)
     } catch {
       setMsgs(p => [...p, { role: 'assistant', content: '(Connection failed.)', id: 'e' + Date.now() }])
     }
@@ -123,10 +136,7 @@ export default function Play({ character, slotIndex, onCharacterUpdate, onExit }
     try {
       const newHist = [...histRef.current, { role: 'user', content: rollCtx + display }]
       const { text, tags } = await callDM(newHist)
-      histRef.current = [...newHist, { role: 'assistant', content: text }]
-      const buf = [{ role: 'assistant', content: text, id: Date.now() + 'a', ooc: isOOC }]
-      applyTags(tags, buf)
-      setMsgs(p => [...p, ...buf])
+      await finishResponse(text, tags, newHist, { ooc: isOOC })
     } catch {
       setMsgs(p => [...p, { role: 'assistant', content: '(Connection failed.)', id: 'e' + Date.now() }])
     }
